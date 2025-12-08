@@ -1,12 +1,9 @@
 
 const pool = require("../config/db");
 const axios = require("axios");
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
-});
+const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
 const READY_HOURS = 48;
 
@@ -99,8 +96,8 @@ const sendReservationEmail = async (userEmail, userName, bookTitle, status, addi
         </div>`;
     }
 
-    await transporter.sendMail({
-      from: `"ShelfShare Library" <${process.env.EMAIL_USER}>`,
+    await resend.emails.send({
+      from: "ShelfShare <onboarding@resend.dev>",
       to: userEmail,
       subject,
       html

@@ -2,7 +2,7 @@
 const pool = require('../config/db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const crypto = require('crypto');
 require('dotenv').config();
 
@@ -20,32 +20,15 @@ const generateToken = (user) => {
   );
 };
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  tls: {
-    rejectUnauthorized: false
-  },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 10000
-});
+// Initialize Resend with API key
+const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
-// Verify transporter configuration on startup
-transporter.verify(function (error, success) {
-  if (error) {
-    console.error('❌ Email transporter verification failed:', error);
-    console.error('Please check EMAIL_USER and EMAIL_PASS in environment variables');
-  } else {
-    console.log('✅ Email server is ready to send messages');
-  }
-});
+// Verify Resend API key on startup
+if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 'your-resend-api-key-here') {
+  console.log('✅ Resend email service initialized');
+} else {
+  console.warn('⚠️  RESEND_API_KEY not configured - email features will not work');
+}
 
 // Register a new user
 exports.register = async (req, res) => {
@@ -254,26 +237,38 @@ exports.forgotPassword = async (req, res) => {
 
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    console.log(`📬 Attempting to send email from: ${process.env.EMAIL_USER}`);
     console.log(`📬 Sending reset email to: ${email}`);
+    console.log(`📬 From: onboarding@resend.dev`);
+    console.log(`📬 Reset URL: ${resetUrl}`);
 
-    await transporter.sendMail({
-      from: `"ShelfShare Library" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: '🔐 Password Reset Request',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #0770ad;">Reset Your Password</h2>
-          <p>You requested a password reset. Click the button below to reset your password:</p>
-          <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background-color: #0770ad; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Reset Password</a>
-          <p style="color: #666;">Or copy this link: <br><a href="${resetUrl}">${resetUrl}</a></p>
-          <p style="color: #999; font-size: 12px;">This link will expire in 1 hour.</p>
-          <p style="color: #999; font-size: 12px;">If you didn't request this, please ignore this email.</p>
-        </div>
-      `
-    });
+    try {
+      const result = await resend.emails.send({
+        from: "ShelfShare <onboarding@resend.dev>",
+        to: email,
+        subject: '🔐 Password Reset Request',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #0770ad;">Reset Your Password</h2>
+            <p>You requested a password reset. Click the button below to reset your password:</p>
+            <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background-color: #0770ad; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Reset Password</a>
+            <p style="color: #666;">Or copy this link: <br><a href="${resetUrl}">${resetUrl}</a></p>
+            <p style="color: #999; font-size: 12px;">This link will expire in 1 hour.</p>
+            <p style="color: #999; font-size: 12px;">If you didn't request this, please ignore this email.</p>
+          </div>
+        `
+      });
 
-    console.log(`✅ Password reset email sent successfully to: ${email}`);
+      console.log(`✅ Resend API Response:`, result);
+      console.log(`✅ Password reset email sent successfully to: ${email}`);
+    } catch (emailError) {
+      console.error(`❌ Resend API Error:`, emailError);
+      console.error(`❌ Error details:`, {
+        message: emailError.message,
+        name: emailError.name,
+        statusCode: emailError.statusCode
+      });
+      throw emailError;
+    }
 
     res.json({ message: "If the email exists, a reset link has been sent" });
 
@@ -281,8 +276,7 @@ exports.forgotPassword = async (req, res) => {
     console.error('❌ Forgot password error:', err);
     console.error('Error details:', {
       message: err.message,
-      code: err.code,
-      command: err.command
+      name: err.name
     });
     res.status(500).json({ message: "Failed to send reset email" });
   }
@@ -348,8 +342,8 @@ exports.subscribeNewsletter = async (req, res) => {
     );
 
 
-    await transporter.sendMail({
-      from: `"ShelfShare Library" <${process.env.EMAIL_USER}>`,
+    await resend.emails.send({
+      from: "ShelfShare <onboarding@resend.dev>",
       to: email,
       subject: '🎉 Welcome to ShelfShare Newsletter!',
       html: `
