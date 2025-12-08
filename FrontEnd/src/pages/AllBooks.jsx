@@ -26,7 +26,8 @@ const AllBooks = () => {
   const inputRef = useRef(null);
   const navigate = useNavigate();
 
-  
+
+  // Fetch initial books and categories
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -43,7 +44,8 @@ const AllBooks = () => {
     })();
   }, []);
 
-  
+
+  // Debounced search suggestions
   useEffect(() => {
     if (query.trim().length < 2) {
       setSuggestions([]);
@@ -77,7 +79,7 @@ const AllBooks = () => {
     };
   }, [query]);
 
-  
+
   useEffect(() => {
     const handleClick = (e) => {
       if (inputRef.current && !inputRef.current.contains(e.target)) {
@@ -89,7 +91,7 @@ const AllBooks = () => {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  
+
   const handleKeyDown = (e) => {
     if (!showSuggestions || suggestions.length === 0) {
       if (e.key === 'Enter') handleSearch(e);
@@ -124,7 +126,8 @@ const AllBooks = () => {
     }
   };
 
-  
+
+  // Handle search submission
   const handleSearch = async (e) => {
     e?.preventDefault();
     if (!query.trim()) return;
@@ -132,7 +135,7 @@ const AllBooks = () => {
     setLoading(true);
     setShowSuggestions(false);
     setSelectedIndex(-1);
-    setSearchPage(1); 
+    setSearchPage(1);
 
     try {
       const res = await apiAxios.get('/books/search', {
@@ -148,7 +151,8 @@ const AllBooks = () => {
     }
   };
 
-  
+
+  // Navigate to book details
   const handleBookClick = (book) => {
     const targetId = book.book_id || book.id || book.google_id;
     setQuery('');
@@ -158,6 +162,7 @@ const AllBooks = () => {
     navigate(`/book/${targetId}`);
   };
 
+  // Reset search and filters
   const handleRefresh = async () => {
     setLoading(true);
     try {
@@ -181,12 +186,12 @@ const AllBooks = () => {
     setSearchPage(1);
   };
 
-  
+
   useEffect(() => {
     setCollectionPage(1);
   }, [category, library]);
 
-  
+
   const allCats = ["All", ...new Set(library.map(b => b.category).filter(Boolean).sort())];
   const filtered = !category || category === 'All'
     ? library
@@ -195,7 +200,7 @@ const AllBooks = () => {
       return b.category === catObj?.name || b.category_name === catObj?.name;
     });
 
-  
+
   const OpenLibraryCard = ({ book }) => (
     <div
       onClick={() => handleBookClick(book)}
@@ -255,7 +260,7 @@ const AllBooks = () => {
 
                 <input
                   type="text"
-                  placeholder="พิมพ์ชื่อหนังสือหรือผู้แต่ง... (เช่น ความ, harry, steve)"
+                  placeholder="Search by title or author... (e.g. Harry, Steve)"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -293,7 +298,7 @@ const AllBooks = () => {
                   {loadingSuggestions ? (
                     <div className="flex items-center justify-center py-8">
                       <Loader2 className="w-6 h-6 animate-spin text-[#0770ad]" />
-                      <span className="ml-3 text-gray-500">กำลังค้นหา...</span>
+                      <span className="ml-3 text-gray-500">Searching...</span>
                     </div>
                   ) : suggestions.length > 0 ? (
                     <>
@@ -326,17 +331,17 @@ const AllBooks = () => {
                         onClick={handleSearch}
                         className="w-full p-4 text-center text-[#0770ad] font-bold hover:bg-blue-50 transition-colors border-t-2 border-gray-200"
                       >
-                        ดูผลลัพธ์ทั้งหมดสำหรับ "{query}"
+                        See all results for "{query}"
                       </button>
                     </>
                   ) : (
                     <div className="px-4 py-8 text-center">
-                      <p className="text-gray-500 mb-2">ไม่พบหนังสือที่ค้นหา</p>
+                      <p className="text-gray-500 mb-2">No books found</p>
                       <button
                         onClick={handleSearch}
                         className="text-[#0770ad] font-bold hover:underline text-sm"
                       >
-                        ค้นหาจาก OpenLibrary
+                        Search in OpenLibrary
                       </button>
                     </div>
                   )}

@@ -80,7 +80,7 @@ const Settings = () => {
   const { user, logout, updateProfile, changePassword } = useAuth();
   const navigate = useNavigate();
 
-  
+
   const [profileForm, setProfileForm] = useState({
     firstName: "",
     lastName: "",
@@ -92,7 +92,7 @@ const Settings = () => {
 
   const [originalData, setOriginalData] = useState({});
 
-  
+
   const [passwordForm, setPasswordForm] = useState({
     current: "",
     newPass: "",
@@ -105,7 +105,7 @@ const Settings = () => {
     confirm: false,
   });
 
-  
+
   useEffect(() => {
     if (user) {
       const initialData = {
@@ -121,13 +121,13 @@ const Settings = () => {
     }
   }, [user]);
 
-  
+
   const handleCancelEdit = () => {
     setProfileForm(originalData);
     setIsEditing(false);
   };
 
-  
+
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -152,7 +152,7 @@ const Settings = () => {
     }
   };
 
-  
+
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     if (passwordForm.newPass.length < 6) {
@@ -179,7 +179,7 @@ const Settings = () => {
     }
   };
 
-  
+
   const handleLogout = () => {
     Swal.fire({
       title: 'Are you sure?',

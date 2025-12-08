@@ -18,7 +18,7 @@ import BorrowBtn from "../components/BorrowBtn";
 import FavBtn from "../components/FavBtn";
 import BookCard from "../components/BookCard";
 import { useAuth } from "../hooks/useAuth";
-import toast from "react-hot-toast"; 
+import toast from "react-hot-toast";
 
 const BookDetail = () => {
   const { id } = useParams();
@@ -47,29 +47,29 @@ const BookDetail = () => {
   const [borrowUnit, setBorrowUnit] = useState("days");
   const [borrowAmount, setBorrowAmount] = useState(7);
 
-  
+
   const durationOptions = {
-    minutes: [5, 10, 15, 30, 45, 60], 
+    minutes: [5, 10, 15, 30, 45, 60],
     hours: [1, 2, 3, 6, 12, 24],
     days: [1, 3, 7, 14, 21, 30],
     weeks: [1, 2, 3, 4],
   };
 
-  
+
   const getTotalHours = () => {
-    if (borrowUnit === "minutes") return borrowAmount / 60; 
+    if (borrowUnit === "minutes") return borrowAmount / 60;
     if (borrowUnit === "hours") return borrowAmount;
     if (borrowUnit === "days") return borrowAmount * 24;
     if (borrowUnit === "weeks") return borrowAmount * 24 * 7;
     return 24;
   };
 
-  
+
   const getDueDate = () => {
     const hours = getTotalHours();
     const dueTime = new Date(Date.now() + hours * 60 * 60 * 1000);
 
-    
+
     if (borrowUnit === "minutes") {
       return dueTime.toLocaleString("en-US", {
         month: "short",
@@ -79,7 +79,7 @@ const BookDetail = () => {
       });
     }
 
-    
+
     if (borrowUnit === "hours") {
       return dueTime.toLocaleString("en-US", {
         month: "short",
@@ -89,7 +89,7 @@ const BookDetail = () => {
       });
     }
 
-    
+
     return dueTime.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -97,6 +97,7 @@ const BookDetail = () => {
     });
   };
 
+  // Fetch book details, reviews, and user status
   const refreshAllData = useCallback(async () => {
     try {
       const bookData = await api.getBookById(id);
@@ -148,6 +149,11 @@ const BookDetail = () => {
       throw err;
     }
   }, [id, user]);
+
+  // Ensure scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
 
   useEffect(() => {
     let isMounted = true;
@@ -202,10 +208,11 @@ const BookDetail = () => {
     };
   }, [id, refreshAllData]);
 
-  const handleSubmitReview = async (e) => {
+  // Handle adding a review
+  const handleReviewSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return toast.error("Please login"); 
-    if (!newReview.comment.trim()) return toast.error("Write a comment"); 
+    if (!user) return toast.error("Please login");
+    if (!newReview.comment.trim()) return toast.error("Write a comment");
     setSubmittingReview(true);
     try {
       await api.addReview(id, newReview.rating, newReview.comment);
@@ -213,18 +220,19 @@ const BookDetail = () => {
       setReviews(Array.isArray(updatedReviews) ? updatedReviews : []);
       await refreshAllData();
       setNewReview({ rating: 5, comment: "" });
-      toast.success("Review added successfully!"); 
+      toast.success("Review added successfully!");
     } catch (err) {
-      toast.error(err.message || "Failed to review"); 
+      toast.error(err.message || "Failed to review");
     } finally {
       setSubmittingReview(false);
     }
   };
 
-  const handleShare = async () => {
+  // Handle book borrowing
+  const handleBorrow = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied to clipboard!"); 
+      toast.success("Link copied to clipboard!");
     } catch (err) { }
   };
 
@@ -288,7 +296,10 @@ const BookDetail = () => {
                 {book.category_name || book.category || "General"}
               </span>
               <button
-                onClick={handleShare}
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                  toast.success("Link copied to clipboard!");
+                }}
                 className="hover:bg-gray-100 p-2 rounded-full transition"
               >
                 <Share2 className="w-5 h-5 text-gray-500" />
@@ -409,7 +420,7 @@ const BookDetail = () => {
                       type="button"
                       onClick={() => {
                         setBorrowUnit(unit);
-                        
+
                         if (unit === "minutes") setBorrowAmount(30);
                         else if (unit === "hours") setBorrowAmount(3);
                         else if (unit === "days") setBorrowAmount(7);
@@ -474,7 +485,7 @@ const BookDetail = () => {
               {!userQueueStatus?.isReserved && (
                 <BorrowBtn
                   book={book}
-                  hours={getTotalHours()} 
+                  hours={getTotalHours()}
                   className="flex-1 justify-center py-4 text-base font-bold"
                   onUpdate={refreshAllData}
                 />
@@ -491,7 +502,7 @@ const BookDetail = () => {
           </h2>
           {user && (
             <form
-              onSubmit={handleSubmitReview}
+              onSubmit={handleReviewSubmit}
               className="mb-8 bg-gray-50 rounded-xl p-6"
             >
               <h3 className="font-bold mb-4">Write a Review</h3>

@@ -28,6 +28,10 @@ const setCache = (key, data) => {
   cache.set(key, { data, timestamp: Date.now() });
 };
 
+// Helper: Determine category string for Google Books
+// const determineSmartCategory = require('../utils/categoryUtils').determineSmartCategory;
+
+// Helper: Enrich book data with local stats (queue, borrow count, rating)
 const enrichBooksWithStats = async (googleBooks) => {
   let client;
   try {
@@ -83,6 +87,7 @@ const enrichBooksWithStats = async (googleBooks) => {
   }
 };
 
+// Sync book availability status based on active loans
 exports.syncBookStatuses = async () => {
   let client;
   try {
@@ -118,6 +123,7 @@ exports.syncBookStatuses = async () => {
   }
 };
 
+// Search books via Google Books API and Local DB
 exports.searchBooks = async (req, res) => {
   const { query } = req.query;
   const API_KEY = process.env.GOOGLE_BOOKS_API_KEY || '';
@@ -131,15 +137,15 @@ exports.searchBooks = async (req, res) => {
 
       console.log(`🔍 Searching: "${searchTerm}"`);
 
-      
+
       const [res1, res2] = await Promise.allSettled([
         axios.get(`https://www.googleapis.com/books/v1/volumes`, {
           params: {
             q: searchTerm,
             maxResults: 40,
             langRestrict: 'en',
-            printType: 'books', 
-            orderBy: 'newest', 
+            printType: 'books',
+            orderBy: 'relevance',
             key: API_KEY
           }
         }),
@@ -150,7 +156,7 @@ exports.searchBooks = async (req, res) => {
             maxResults: 40,
             printType: 'books',
             langRestrict: 'en',
-            orderBy: 'newest', 
+            orderBy: 'relevance',
             key: API_KEY
           }
         })
@@ -175,7 +181,7 @@ exports.searchBooks = async (req, res) => {
             title: info.title || "No Title",
             author: info.authors ? info.authors[0] : "Unknown",
             description: info.description || "",
-            cover_image: info.imageLinks?.thumbnail?.replace('http:', 'https:') || "https://via.placeholder.com/150x220?text=No+Cover",
+            cover_image: info.imageLinks?.thumbnail?.replace('http:', 'https:') || null,
             published_year: info.publishedDate?.substring(0, 4) || null,
             category: determineSmartCategory(info.categories),
             category_name: determineSmartCategory(info.categories),
@@ -188,7 +194,7 @@ exports.searchBooks = async (req, res) => {
       return res.json(items);
 
     } else {
-      
+
       const cacheKey = 'homepage:books';
       const cachedResult = getCache(cacheKey);
       if (cachedResult) return res.json(cachedResult);
@@ -223,12 +229,12 @@ exports.searchBooks = async (req, res) => {
               title: info.title || "No Title",
               author: info.authors ? info.authors[0] : "Unknown",
               description: info.description || "",
-              cover_image: info.imageLinks?.thumbnail?.replace('http:', 'https:') || "https://via.placeholder.com/150x220?text=No+Cover",
+              cover_image: info.imageLinks?.thumbnail?.replace('http:', 'https:') || null,
               published_year: info.publishedDate?.substring(0, 4) || null,
               category: catName,
               category_name: catName,
               status: 'available',
-              is_google_book: true 
+              is_google_book: true
             });
 
             globalSeenIds.add(item.id);
@@ -254,6 +260,7 @@ exports.searchBooks = async (req, res) => {
   }
 };
 
+// Add a new book to the library
 exports.addBook = async (req, res) => {
   const { title, author, isbn, published_year, category_name, cover_image, description, google_id } = req.body;
   const owner_id = req.user ? (req.user.id || req.user.user_id) : 1;
@@ -284,6 +291,7 @@ exports.addBook = async (req, res) => {
   }
 };
 
+// Get all books from the local database
 exports.getAllBooks = async (req, res) => {
   try {
     const allBooks = await pool.query(`
@@ -316,6 +324,7 @@ exports.getAllBooks = async (req, res) => {
   }
 };
 
+// Get detailed book information by ID (Local or Google)
 exports.getBookById = async (req, res) => {
   const { id } = req.params;
   const API_KEY = process.env.GOOGLE_BOOKS_API_KEY || '';
@@ -328,7 +337,7 @@ exports.getBookById = async (req, res) => {
 
     console.log(`🔍 [GET-BOOK] Searching for ID: ${id}`);
 
-    
+
     const query = `
       SELECT b.*, c.name as category_name,
         EXISTS (SELECT 1 FROM loans l WHERE l.book_id = b.book_id AND l.status = 'active') as is_borrowed,
@@ -347,7 +356,7 @@ exports.getBookById = async (req, res) => {
       console.log(`✅ [GET-BOOK] Found in DB: ${bookData.title}`);
     }
 
-    
+
     if (!bookData) {
       console.log(`🌐 [GET-BOOK] Not in DB, fetching from Google Books API...`);
 
@@ -356,7 +365,7 @@ exports.getBookById = async (req, res) => {
           `https://www.googleapis.com/books/v1/volumes/${id}`,
           {
             params: { key: API_KEY },
-            timeout: 10000 
+            timeout: 10000
           }
         );
 
@@ -372,49 +381,50 @@ exports.getBookById = async (req, res) => {
 
         console.log(`✅ [GET-BOOK] Fetched from Google: ${info.title}`);
 
-        
+
         const existing = await client.query(
-          "SELECT book_id FROM books WHERE title = $1 OR isbn = $2 OR google_id = $3",
+          "SELECT * FROM books WHERE title = $1 OR isbn = $2 OR google_id = $3",
           [info.title, isbn, id]
         );
 
         if (existing.rows.length > 0) {
-          console.log(`⚠️ [GET-BOOK] Book exists with different ID, redirecting...`);
-          client.release();
-          return exports.getBookById({ params: { id: existing.rows[0].book_id } }, res);
+          console.log(`⚠️ [GET-BOOK] Book exists in DB, using local record...`);
+          bookData = existing.rows[0];
+          isGoogle = false;
+
+        } else {
+          // ถ้าไม่เจอใน DB → ใช้ข้อมูลจาก Google API
+          isGoogle = true;
+          const categoryName = determineSmartCategory(info.categories);
+
+          bookData = {
+            google_id: item.id,
+            book_id: item.id,
+            title: info.title || "No Title",
+            author: info.authors ? info.authors.join(', ') : "Unknown",
+            isbn: isbn,
+            description: info.description || "No description available",
+            cover_image: info.imageLinks?.thumbnail?.replace('http:', 'https:') ||
+              info.imageLinks?.smallThumbnail?.replace('http:', 'https:') ||
+              null,
+            published_year: info.publishedDate ? info.publishedDate.substring(0, 4) : null,
+            category_name: categoryName,
+            category: categoryName,
+            status: 'available',
+            queue_count: 0,
+            borrow_count: 0,
+            avg_rating: 0,
+            review_count: 0,
+            is_borrowed: false
+          };
+
+          console.log(`✅ [GET-BOOK] Google book data prepared: ${bookData.title}`);
         }
-
-        
-        isGoogle = true;
-        const categoryName = determineSmartCategory(info.categories);
-
-        bookData = {
-          google_id: item.id,
-          book_id: item.id, 
-          title: info.title || "No Title",
-          author: info.authors ? info.authors.join(', ') : "Unknown",
-          isbn: isbn,
-          description: info.description || "No description available",
-          cover_image: info.imageLinks?.thumbnail?.replace('http:', 'https:') ||
-            info.imageLinks?.smallThumbnail?.replace('http:', 'https:') ||
-            "https://via.placeholder.com/300x450?text=No+Cover",
-          published_year: info.publishedDate ? info.publishedDate.substring(0, 4) : null,
-          category_name: categoryName,
-          category: categoryName,
-          status: 'available',
-          queue_count: 0,
-          borrow_count: 0,
-          avg_rating: 0,
-          review_count: 0,
-          is_borrowed: false
-        };
-
-        console.log(`✅ [GET-BOOK] Google book data prepared: ${bookData.title}`);
 
       } catch (googleError) {
         console.error(`❌ [GET-BOOK] Google API Error:`, googleError.message);
 
-        
+
         client.release();
         return res.status(404).json({
           error: "Book not found",
@@ -425,7 +435,7 @@ exports.getBookById = async (req, res) => {
       }
     }
 
-    
+
     const response = {
       ...bookData,
       status: bookData.is_borrowed ? 'borrowed' : (bookData.status || 'available'),
@@ -447,6 +457,7 @@ exports.getBookById = async (req, res) => {
   }
 };
 
+// Get book suggestions for autocomplete
 exports.getSuggestions = async (req, res) => {
   const { query } = req.query;
 
@@ -495,7 +506,7 @@ exports.getSuggestions = async (req, res) => {
               book_id: null,
               title: info.title || "No Title",
               author: info.authors ? info.authors[0] : "Unknown",
-              cover_image: info.imageLinks?.thumbnail?.replace('http:', 'https:') || "https://via.placeholder.com/100x150?text=No+Cover",
+              cover_image: info.imageLinks?.thumbnail?.replace('http:', 'https:') || null,
               source: 'google'
             };
           });
@@ -508,9 +519,10 @@ exports.getSuggestions = async (req, res) => {
       const uniqueSuggestions = [];
       const seenKeys = new Set();
 
+      // Clean title and author for comparison
       combined.forEach(book => {
-        const cleanTitle = book.title.toLowerCase().replace(/[^a-z0-9]/g, "");
-        const cleanAuthor = book.author ? book.author.toLowerCase().replace(/[^a-z0-9]/g, "") : "";
+        const cleanTitle = book.title.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+        const cleanAuthor = book.author ? book.author.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "") : "";
         const key = `${cleanTitle}-${cleanAuthor}`;
 
         if (!seenKeys.has(key)) {

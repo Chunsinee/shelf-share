@@ -11,7 +11,7 @@ const generateToken = (user) => {
     {
       id: user.user_id,
       user_id: user.user_id,
-      username: user.username, 
+      username: user.username,
       email: user.email,
       role: user.role
     },
@@ -28,6 +28,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+// Register a new user
 exports.register = async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -53,7 +54,7 @@ exports.register = async (req, res) => {
     const token = generateToken(newUser.rows[0]);
     const { password: _, ...userData } = newUser.rows[0];
 
-    console.log(`👤 New User Registered: ${username} (${email})`); 
+    console.log(`👤 New User Registered: ${username} (${email})`);
 
     res.json({ token, user: userData });
   } catch (err) {
@@ -62,6 +63,7 @@ exports.register = async (req, res) => {
   }
 };
 
+// Authenticate user and return JWT token
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -80,14 +82,14 @@ exports.login = async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password);
 
     if (!validPassword) {
-      console.log(`❌ Failed Login Attempt: ${email}`); 
+      console.log(`❌ Failed Login Attempt: ${email}`);
       return res.status(401).json({ message: "Invalid password" });
     }
 
     const token = generateToken(user);
     const { password: _, ...userData } = user;
 
-    console.log(`✅ User Logged In: ${user.username} (${user.email})`); 
+    console.log(`✅ User Logged In: ${user.username} (${user.email})`);
 
     res.json({ token, user: userData });
   } catch (err) {
@@ -96,6 +98,7 @@ exports.login = async (req, res) => {
   }
 };
 
+// Get current authenticated user's profile
 exports.getProfile = async (req, res) => {
   try {
     const userId = req.user.id || req.user.user_id;
@@ -122,17 +125,18 @@ exports.getProfile = async (req, res) => {
   }
 };
 
+// Update user profile details
 exports.updateProfile = async (req, res) => {
   try {
     const userId = req.user.id || req.user.user_id;
-    
+
     const { firstName, lastName, mobile, gender, address } = req.body;
 
     if (!userId) {
       return res.status(401).json({ message: "User ID not found in token" });
     }
 
-    
+
     const update = await pool.query(
       `UPDATE users 
        SET first_name = $1, last_name = $2, mobile = $3, gender = $4, address = $5
@@ -145,7 +149,7 @@ exports.updateProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    
+
     const u = update.rows[0];
     res.json({
       ...u,
@@ -158,6 +162,7 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
+// Change user password
 exports.changePassword = async (req, res) => {
   try {
     const userId = req.user.id || req.user.user_id;
@@ -199,6 +204,7 @@ exports.changePassword = async (req, res) => {
   }
 };
 
+// Initiate password reset process via email
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -222,7 +228,7 @@ exports.forgotPassword = async (req, res) => {
       [resetTokenHash, resetTokenExpire, user.rows[0].user_id]
     );
 
-    
+
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
     await transporter.sendMail({
@@ -249,6 +255,7 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
+// Reset password using valid token
 exports.resetPassword = async (req, res) => {
   try {
     const { token, newPassword } = req.body;
@@ -282,6 +289,7 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ message: "Failed to reset password" });
   }
 };
+// Subscribe email to newsletter
 exports.subscribeNewsletter = async (req, res) => {
   try {
     const { email } = req.body;
@@ -290,7 +298,7 @@ exports.subscribeNewsletter = async (req, res) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    
+
     const existing = await pool.query(
       "SELECT * FROM newsletter_subscribers WHERE email = $1",
       [email]
@@ -300,13 +308,13 @@ exports.subscribeNewsletter = async (req, res) => {
       return res.status(400).json({ message: "This email is already subscribed" });
     }
 
-    
+
     await pool.query(
       "INSERT INTO newsletter_subscribers (email, subscribed_at) VALUES ($1, NOW())",
       [email]
     );
 
-    
+
     await transporter.sendMail({
       from: `"ShelfShare Library" <${process.env.EMAIL_USER}>`,
       to: email,

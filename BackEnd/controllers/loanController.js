@@ -12,6 +12,7 @@ const getUsername = async (pool, userId) => {
   }
 };
 
+// Helper: Get or add book to local DB from Google/OpenLibrary ID
 const getOrAddBookId = async (client, inputId) => {
   if (!isNaN(inputId)) return parseInt(inputId, 10);
 
@@ -35,7 +36,7 @@ const getOrAddBookId = async (client, inputId) => {
       const work = workRes.data;
       const edition = editionRes.data.entries?.[0];
 
-      
+
       let authorName = "Unknown";
       if (work.authors?.[0]?.author?.key) {
         try {
@@ -51,7 +52,7 @@ const getOrAddBookId = async (client, inputId) => {
 
       const isbn = edition?.isbn_13?.[0] || edition?.isbn_10?.[0] || `OL-${inputId}`;
 
-      
+
       let category_id = 1;
       if (work.subjects?.length > 0) {
         const catRes = await client.query(
@@ -65,7 +66,7 @@ const getOrAddBookId = async (client, inputId) => {
         ? work.description
         : work.description?.value || "No description available";
 
-      
+
       let coverImage = "https://via.placeholder.com/300x450?text=No+Cover";
       if (work.covers?.[0]) {
         coverImage = `https://covers.openlibrary.org/b/id/${work.covers[0]}-L.jpg`;
@@ -114,8 +115,8 @@ const getOrAddBookId = async (client, inputId) => {
         ? info.industryIdentifiers[0].identifier
         : `GBOOKS-${inputId}`;
 
-      
-      let category_id = 1; 
+
+      let category_id = 1;
       const smartCat = determineSmartCategory(info.categories);
 
       const catRes = await client.query(
@@ -149,7 +150,7 @@ const getOrAddBookId = async (client, inputId) => {
       return newBook.rows[0].book_id;
     }
 
-    
+
     throw new Error("Unsupported book ID format");
 
   } catch (err) {
@@ -158,6 +159,7 @@ const getOrAddBookId = async (client, inputId) => {
   }
 };
 
+// Borrow a book (creates loan record and updates status)
 exports.borrowBook = async (req, res) => {
   const { book_id, hours } = req.body;
   const user_id = req.user.id || req.user.user_id;
@@ -180,7 +182,7 @@ exports.borrowBook = async (req, res) => {
     const realBookId = await getOrAddBookId(client, book_id);
     console.log("✅ Real book_id:", realBookId);
 
-    
+
     const existingLoan = await client.query(
       "SELECT * FROM loans WHERE book_id = $1 AND user_id = $2 AND status = 'active'",
       [realBookId, user_id]
@@ -191,7 +193,7 @@ exports.borrowBook = async (req, res) => {
       return res.status(400).json("You already borrowed this book");
     }
 
-    
+
     const bookCheck = await client.query(
       "SELECT status, title FROM books WHERE book_id = $1",
       [realBookId]
@@ -207,7 +209,7 @@ exports.borrowBook = async (req, res) => {
       return res.status(400).json("Book is currently borrowed by another user");
     }
 
-    
+
     const [activeLoans, userInfo] = await Promise.all([
       client.query(
         "SELECT COUNT(*) as count FROM loans WHERE user_id = $1 AND status = 'active'",
@@ -226,7 +228,7 @@ exports.borrowBook = async (req, res) => {
       return res.status(400).json(`You can only borrow ${borrowLimit} books at a time`);
     }
 
-    
+
     const dueDate = new Date(Date.now() + borrowHours * 60 * 60 * 1000);
     const newLoan = await client.query(
       `INSERT INTO loans (book_id, user_id, loan_date, due_date, status) 
@@ -234,7 +236,7 @@ exports.borrowBook = async (req, res) => {
       [realBookId, user_id, dueDate]
     );
 
-    
+
     await client.query("UPDATE books SET status = 'borrowed' WHERE book_id = $1", [realBookId]);
 
     await client.query("COMMIT");
@@ -252,7 +254,7 @@ exports.borrowBook = async (req, res) => {
     await client.query("ROLLBACK");
     console.error("❌ Borrow Error:", err.message);
 
-    
+
     const errorMessage = err.message.includes("Cannot process")
       ? err.message
       : "Failed to borrow book. Please try again.";
@@ -263,6 +265,7 @@ exports.borrowBook = async (req, res) => {
   }
 };
 
+// Return a borrowed book and process next queue
 exports.returnBook = async (req, res) => {
   const { book_id } = req.body;
   const user_id = req.user.id || req.user.user_id;
@@ -274,7 +277,7 @@ exports.returnBook = async (req, res) => {
   try {
     await client.query("BEGIN");
 
-    
+
     const loan = await client.query(
       `SELECT l.*, b.title FROM loans l 
        JOIN books b ON l.book_id = b.book_id
@@ -287,13 +290,13 @@ exports.returnBook = async (req, res) => {
       return res.status(404).json("Active loan not found");
     }
 
-    
+
     await client.query(
       "UPDATE loans SET status = 'returned', return_date = CURRENT_TIMESTAMP WHERE loan_id = $1",
       [loan.rows[0].loan_id]
     );
 
-    
+
     const { processNextInQueue } = require("./reservationController");
     const queueResult = await processNextInQueue(client, book_id);
 
@@ -319,6 +322,7 @@ exports.returnBook = async (req, res) => {
   }
 };
 
+// Get current user's loan history
 exports.getMyLoans = async (req, res) => {
   const user_id = req.user.id || req.user.user_id;
 
@@ -346,6 +350,7 @@ exports.getMyLoans = async (req, res) => {
   }
 };
 
+// Get overdue loans for the current user
 exports.getOverdueLoans = async (req, res) => {
   const user_id = req.user.id || req.user.user_id;
 
@@ -366,6 +371,7 @@ exports.getOverdueLoans = async (req, res) => {
     res.status(500).json("Failed to get overdue loans");
   }
 };
+// System Job: Auto-return loans that have passed due date
 exports.autoReturnExpiredLoans = async (req, res) => {
   const client = await pool.connect();
   try {

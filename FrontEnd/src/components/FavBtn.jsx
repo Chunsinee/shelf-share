@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
-import toast from 'react-hot-toast'; 
+import toast from 'react-hot-toast';
 import api from '../services/api';
 
 const FavBtn = ({ book, className = '', size = 'default' }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  
+
   const sizes = {
     small: 'w-10 h-10',
     default: 'w-12 h-12',
@@ -22,27 +22,14 @@ const FavBtn = ({ book, className = '', size = 'default' }) => {
     large: 'w-7 h-7'
   };
 
-  
+
   useEffect(() => {
     checkFavoriteStatus();
-  }, [book.id, isFavorite]); 
+  }, [book.id, isFavorite]);
 
   const checkFavoriteStatus = async () => {
     try {
-      
-      
-      
 
-      
-      
-      
-      
-
-      
-      
-      
-
-      
       const myFavs = await api.getMyFavorites();
       const exists = myFavs.some(fav =>
         String(fav.book_id) === String(book.book_id || book.id) ||
@@ -58,43 +45,28 @@ const FavBtn = ({ book, className = '', size = 'default' }) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (isAnimating) return; 
+    if (isAnimating) return;
 
     const targetId = book.book_id || book.id || book.google_id;
 
     try {
       if (isFavorite) {
-        
+
         await api.removeFavorite(targetId);
         setIsFavorite(false);
 
-        toast(
-          <div className="flex items-center gap-2">
-            <span>💔</span>
-            <span className="font-medium">Removed from favorites</span>
-          </div>,
-          { duration: 2000, style: { background: '#374151', color: 'white' } }
-        );
+        toast.success("Removed from favorites");
       } else {
-        
+
         await api.addFavorite(book);
         setIsFavorite(true);
         setIsAnimating(true);
         setTimeout(() => setIsAnimating(false), 600);
 
-        toast(
-          <div className="flex items-center gap-2">
-            <span>❤️</span>
-            <div>
-              <p className="font-bold">Added to favorites!</p>
-              <p className="text-xs opacity-80">{book.title}</p>
-            </div>
-          </div>,
-          { duration: 3000, style: { background: '#EF4444', color: 'white' } }
-        );
+        toast.success("Added to favorites!");
       }
 
-      
+
       window.dispatchEvent(new Event('favoritesUpdated'));
 
     } catch (err) {

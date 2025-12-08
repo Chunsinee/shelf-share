@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Clock, Users, Star, TrendingUp, Book as BookIcon } from 'lucide-react';
 
@@ -17,7 +16,7 @@ const BookCard = ({ book, rank = null, showStats = false }) => {
   const reviewCount = parseInt(book.review_count || 0);
 
   return (
-    <div 
+    <div
       onClick={handleClick}
       className="bg-white border border-gray-100 rounded-2xl p-4 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group flex flex-col h-full relative"
     >
@@ -31,10 +30,10 @@ const BookCard = ({ book, rank = null, showStats = false }) => {
       )}
 
       <div className="h-56 bg-gray-50 rounded-xl mb-4 overflow-hidden relative flex items-center justify-center">
-        <img 
-          src={book.cover_image || "https://via.placeholder.com/150x220?text=No+Cover"} 
-          alt={book.title} 
-          className="h-full object-contain group-hover:scale-105 transition-transform duration-300" 
+        <img
+          src={book.cover_image || "https://via.placeholder.com/150x220?text=No+Cover"}
+          alt={book.title}
+          className="h-full object-contain group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
           onError={(e) => {
             e.target.src = "https://via.placeholder.com/150x220?text=No+Cover";
@@ -58,7 +57,7 @@ const BookCard = ({ book, rank = null, showStats = false }) => {
         <h3 className="font-bold text-base leading-tight mb-1 line-clamp-2 group-hover:text-[#0770ad] transition-colors">
           {book.title}
         </h3>
-        
+
         <p className="text-sm text-gray-500 mb-3 line-clamp-1">
           {book.author || 'Unknown Author'}
         </p>
@@ -101,7 +100,7 @@ const BookCard = ({ book, rank = null, showStats = false }) => {
           <span className="text-[10px] font-bold uppercase bg-blue-50 text-[#0770ad] px-2 py-1 rounded-md border border-blue-100 truncate">
             {book.category || book.category_name || 'General'}
           </span>
-          
+
           {book.published_year && (
             <span className="text-xs text-gray-400 font-medium flex items-center gap-1">
               <Clock className="w-3 h-3" />

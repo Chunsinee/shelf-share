@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Fetch user profile if token exists
   const fetchUserProfile = async () => {
     try {
       const res = await axios.get('/users/profile');
@@ -32,6 +33,7 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
+  // Handle user login and state update
   const login = async (email, password) => {
     try {
       const res = await api.login(email, password);
@@ -47,6 +49,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Handle user registration and state update
   const register = async (username, email, password) => {
     try {
       const res = await api.register(username, email, password);
@@ -54,7 +57,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', res.token);
         axios.defaults.headers.common['Authorization'] = `Bearer ${res.token}`;
         setUser(res.user);
-        
+
         return { success: true, user: res.user };
       }
     } catch (err) {
@@ -62,6 +65,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Logout user and clear state
   const logout = () => {
     localStorage.removeItem('token');
     delete axios.defaults.headers.common['Authorization'];
