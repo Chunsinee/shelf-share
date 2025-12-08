@@ -36,7 +36,9 @@ cd BackEnd
 npm install
 ```
 
-Create a `.env` file in the `BackEnd` directory:
+Create environment files in the `BackEnd` directory:
+
+**For Development (`.env.local`):**
 ```env
 PORT=5000
 DB_USER=your_postgres_user
@@ -46,13 +48,19 @@ DB_PORT=5432
 DB_NAME=shelfshare
 JWT_SECRET=your_jwt_secret_key
 GOOGLE_BOOKS_API_KEY=your_google_api_key
+BASE_URL=http://localhost:5000
 ```
+
+**For Production (`.env.production`):**
+(Same keys as above, but with production credentials)
 
 Run the server:
 ```bash
-npm start
-# or for development
+# Development (loads .env.local)
 npm run dev
+
+# Production (loads .env.production)
+npm run start:prod
 ```
 
 ### 3. Frontend Setup

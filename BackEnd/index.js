@@ -3,7 +3,9 @@ const cors = require('cors');
 const cron = require('node-cron');
 const axios = require('axios');
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.local';
+require('dotenv').config({ path: path.join(__dirname, envFile) });
+console.log(`🌍 Loading environment variables from ${envFile}`);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -18,7 +20,7 @@ app.use('/api/reservations', require('./routes/reservations'));
 app.use('/api/categories', require('./routes/categories'));
 
 app.use('/api/reviews', require('./routes/reviews'));
-app.use('/api/favorites', require('./routes/favorites')); 
+app.use('/api/favorites', require('./routes/favorites'));
 
 app.use((err, req, res, next) => {
   console.error("🔥 Global Error Handler:", err.stack);
@@ -30,20 +32,22 @@ app.use((err, req, res, next) => {
 
 app.get('/', (req, res) => res.send('📚 ShelfShare API Running...'));
 
+const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
+
 cron.schedule('*/5 * * * *', async () => {
   console.log('⏰ [CRON] Running maintenance tasks...');
 
   try {
-    
-    const loanResponse = await axios.post(`http://localhost:${PORT}/api/loans/auto-return`);
+
+    const loanResponse = await axios.post(`${BASE_URL}/api/loans/auto-return`);
     console.log('✅ [CRON] Auto-return:', loanResponse.data);
   } catch (error) {
     console.error('❌ [CRON] Auto-return error:', error.message);
   }
 
   try {
-    
-    const resResponse = await axios.post(`http://localhost:${PORT}/api/reservations/process-expired`);
+
+    const resResponse = await axios.post(`${BASE_URL}/api/reservations/process-expired`);
     console.log('✅ [CRON] Process expired:', resResponse.data);
   } catch (error) {
     console.error('❌ [CRON] Process expired error:', error.message);
