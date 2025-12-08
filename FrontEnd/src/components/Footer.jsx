@@ -14,8 +14,9 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-20 pb-12 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8">
 
-          <div className="lg:col-span-4 space-y-6">
-            <Link to="/" className="flex items-center gap-2 group">
+          {/* ShelfShare Section - อยู่กลาง mobile */}
+          <div className="lg:col-span-4 space-y-6 text-center lg:text-left flex flex-col items-center lg:items-start">
+            <Link to="/" className="inline-flex items-center gap-2 group">
               <div className="bg-white/10 p-2 rounded-xl group-hover:rotate-12 transition-transform duration-500 backdrop-blur-sm border border-white/10">
                 <Book className="w-6 h-6 text-white" />
               </div>
@@ -39,16 +40,17 @@ const Footer = () => {
             </div>
           </div>
 
-          <div className="lg:col-span-2 col-span-6">
+          {/* Discover Section - อยู่กลาง mobile */}
+          <div className="lg:col-span-2 col-span-6 flex flex-col items-center lg:items-start">
             <h4 className="text-white font-bold mb-6 tracking-wide">Discover</h4>
-            <ul className="space-y-4 text-sm">
+            <ul className="space-y-4 text-sm flex flex-col items-center lg:items-start">
               {['New Arrivals', 'Trending Now', 'Top Rated', 'Categories', 'Authors'].map((item) => (
                 <li key={item}>
                   <Link
                     to={item === 'Trending Now' ? '/?filter=trending' : item === 'Top Rated' ? '/?filter=top_rated' : '#'}
                     className="text-blue-100 hover:text-white hover:pl-2 transition-all duration-300 flex items-center gap-1 group"
                   >
-                    <span className="w-0 group-hover:w-1 h-1 bg-white rounded-full transition-all duration-300" />
+                    <span className="hidden lg:block w-0 group-hover:w-1 h-1 bg-white rounded-full transition-all duration-300" />
                     {item}
                   </Link>
                 </li>
@@ -56,13 +58,14 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div className="lg:col-span-2 col-span-6">
+          {/* Support Section - อยู่กลาง mobile */}
+          <div className="lg:col-span-2 col-span-6 flex flex-col items-center lg:items-start">
             <h4 className="text-white font-bold mb-6 tracking-wide">Support</h4>
-            <ul className="space-y-4 text-sm">
+            <ul className="space-y-4 text-sm flex flex-col items-center lg:items-start">
               {['Help Center', 'Borrowing Rules', 'Return Policy', 'Contact Us', 'FAQs'].map((item) => (
                 <li key={item}>
                   <Link to="#" className="text-blue-100 hover:text-white hover:pl-2 transition-all duration-300 flex items-center gap-1 group">
-                    <span className="w-0 group-hover:w-1 h-1 bg-white rounded-full transition-all duration-300" />
+                    <span className="hidden lg:block w-0 group-hover:w-1 h-1 bg-white rounded-full transition-all duration-300" />
                     {item}
                   </Link>
                 </li>
@@ -70,11 +73,12 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div className="lg:col-span-4 bg-white/10 rounded-3xl p-6 lg:p-8 border border-white/20 backdrop-blur-md relative overflow-hidden group">
+          {/* Newsletter Section - อยู่กลาง mobile และขนาดพอดี */}
+          <div className="lg:col-span-4 w-full max-w-md mx-auto lg:mx-0 bg-white/10 rounded-3xl p-6 lg:p-8 border border-white/20 backdrop-blur-md relative overflow-hidden group text-center lg:text-left">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-[50px] -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:bg-white/20 transition-all duration-700" />
 
             <h4 className="text-white font-bold text-lg mb-2 relative z-10">Subscribe to our newsletter</h4>
-            <p className="text-blue-100 text-sm mb-6 relative z-10 max-w-xs">Get the latest book arrivals and exclusive reading lists delivered to your inbox.</p>
+            <p className="text-blue-100 text-sm mb-6 relative z-10">Get the latest book arrivals and exclusive reading lists delivered to your inbox.</p>
 
             <form onSubmit={(e) => e.preventDefault()} className="space-y-3 relative z-10">
               <div className="relative group">
@@ -94,9 +98,10 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-16 pt-8 border-t border-white/20 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-blue-100">
+        {/* Copyright Section */}
+        <div className="mt-16 pt-8 border-t border-white/20 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-blue-100 text-center md:text-left">
           <p>© {new Date().getFullYear()} ShelfShare. All rights reserved.</p>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap justify-center gap-6">
             <Link to="#" className="hover:text-white transition-colors">Privacy Policy</Link>
             <Link to="#" className="hover:text-white transition-colors">Terms of Service</Link>
             <Link to="#" className="hover:text-white transition-colors">Cookies</Link>

@@ -22,9 +22,28 @@ const generateToken = (user) => {
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false, // true for 465, false for other ports
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
+  },
+  tls: {
+    rejectUnauthorized: false
+  },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 10000
+});
+
+// Verify transporter configuration on startup
+transporter.verify(function (error, success) {
+  if (error) {
+    console.error('❌ Email transporter verification failed:', error);
+    console.error('Please check EMAIL_USER and EMAIL_PASS in environment variables');
+  } else {
+    console.log('✅ Email server is ready to send messages');
   }
 });
 
@@ -213,9 +232,12 @@ exports.forgotPassword = async (req, res) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
+    console.log(`📧 Password reset requested for: ${email}`);
+
     const user = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
 
     if (user.rows.length === 0) {
+      console.log(`⚠️  Email not found in database: ${email}`);
       return res.json({ message: "If the email exists, a reset link has been sent" });
     }
 
@@ -228,8 +250,12 @@ exports.forgotPassword = async (req, res) => {
       [resetTokenHash, resetTokenExpire, user.rows[0].user_id]
     );
 
+    console.log(`🔑 Reset token generated for user: ${user.rows[0].username}`);
 
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+    console.log(`📬 Attempting to send email from: ${process.env.EMAIL_USER}`);
+    console.log(`📬 Sending reset email to: ${email}`);
 
     await transporter.sendMail({
       from: `"ShelfShare Library" <${process.env.EMAIL_USER}>`,
@@ -247,10 +273,17 @@ exports.forgotPassword = async (req, res) => {
       `
     });
 
+    console.log(`✅ Password reset email sent successfully to: ${email}`);
+
     res.json({ message: "If the email exists, a reset link has been sent" });
 
   } catch (err) {
-    console.error('Forgot password error:', err);
+    console.error('❌ Forgot password error:', err);
+    console.error('Error details:', {
+      message: err.message,
+      code: err.code,
+      command: err.command
+    });
     res.status(500).json({ message: "Failed to send reset email" });
   }
 };
