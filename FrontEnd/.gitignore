@@ -20,8 +20,11 @@ Environment Variables
 Ignore the environment configuration file which should not be committed
 
 .env
+.env.local
 /BackEnd/.env
+/BackEnd/.env.local
 /FrontEnd/.env
+/FrontEnd/.env.local
 
 Logs and npm debug files
 

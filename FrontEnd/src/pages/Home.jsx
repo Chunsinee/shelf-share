@@ -5,6 +5,16 @@ import BookCard from "../components/BookCard";
 import api from "../services/api";
 import Navbar from "../components/Navbar";
 
+const fixedCategories = ["Fiction", "Non-Fiction", "Technology", "Science", "History", "Business", "Art & Design", "Biography", "Health & Wellness", "Travel"];
+
+const recommendations = [
+  { id: "artist", label: "Artist of the Month", icon: Award },
+  { id: "year", label: "Book of the Year", icon: Calendar },
+  { id: "genre", label: "Top Genre", icon: Zap },
+  { id: "trending", label: "Trending", icon: TrendingUp },
+  { id: "top_rated", label: "Top Rated", icon: Award },
+];
+
 const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -19,15 +29,6 @@ const Home = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTopGenreCategory, setSelectedTopGenreCategory] = useState("All");
   const itemsPerPage = 24;
-
-  const fixedCategories = ["Fiction", "Non-Fiction", "Technology", "Science", "History", "Business", "Art & Design", "Biography", "Health & Wellness", "Travel"];
-  const recommendations = [
-    { id: "artist", label: "Artist of the Month", icon: Award },
-    { id: "year", label: "Book of the Year", icon: Calendar },
-    { id: "genre", label: "Top Genre", icon: Zap },
-    { id: "trending", label: "Trending", icon: TrendingUp },
-    { id: "top_rated", label: "Top Rated", icon: Award },
-  ];
 
   const BOOKS_PER_CATEGORY = 10;
   const TOP_GENRE_LIMIT = 5;
