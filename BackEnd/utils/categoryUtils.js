@@ -9,6 +9,8 @@ const determineSmartCategory = (googleCategories) => {
   if (allCats.includes('history') || allCats.includes('war') || allCats.includes('ancient')) return 'History';
   if (allCats.includes('art') || allCats.includes('design') || allCats.includes('music')) return 'Art & Design';
   if (allCats.includes('biography') || allCats.includes('memoir')) return 'Biography';
+  if (allCats.includes('health') || allCats.includes('wellness') || allCats.includes('fitness') || allCats.includes('nutrition') || allCats.includes('medical')) return 'Health & Wellness';
+  if (allCats.includes('travel') || allCats.includes('guide') || allCats.includes('tourism') || allCats.includes('adventure')) return 'Travel';
 
   return 'Non-Fiction';
 };

@@ -7,6 +7,7 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -21,6 +22,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // 1. Initial Check
   useEffect(() => {
     const initAuth = async () => {
       const token = localStorage.getItem('token');
@@ -28,15 +30,15 @@ export const AuthProvider = ({ children }) => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         await fetchUserProfile();
       }
-      setLoading(false);
+      setLoading(false); 
     };
     initAuth();
   }, []);
 
-  // Handle user login and state update
   const login = async (email, password) => {
     try {
       const res = await api.login(email, password);
+      
       if (res.token) {
         localStorage.setItem('token', res.token);
         axios.defaults.headers.common['Authorization'] = `Bearer ${res.token}`;
@@ -65,7 +67,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout user and clear state
+  // Update user profile and refresh state
+  const updateProfile = async (profileData) => {
+    try {
+      const res = await api.updateProfile(profileData);
+      if (res.user) {
+        setUser(res.user);
+        return { success: true, user: res.user };
+      }
+      return { success: false, message: "Update failed" };
+    } catch (err) {
+      return { success: false, message: err.response?.data || "Update failed" };
+    }
+  };
+
+  // Change password
+  const changePassword = async (currentPassword, newPassword) => {
+    try {
+      const res = await api.changePassword(currentPassword, newPassword);
+      return { success: true, message: res.message };
+    } catch (err) {
+      return { success: false, message: err.response?.data || "Password change failed" };
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     delete axios.defaults.headers.common['Authorization'];
@@ -74,7 +99,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading, updateProfile: api.updateProfile, changePassword: api.changePassword }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, updateProfile, changePassword }}>
       {!loading && children}
     </AuthContext.Provider>
   );

@@ -20,7 +20,7 @@ const Home = () => {
   const [selectedTopGenreCategory, setSelectedTopGenreCategory] = useState("All");
   const itemsPerPage = 24;
 
-  const fixedCategories = ["Fiction", "Non-Fiction", "Technology", "Science", "History", "Business", "Art & Design", "Biography"];
+  const fixedCategories = ["Fiction", "Non-Fiction", "Technology", "Science", "History", "Business", "Art & Design", "Biography", "Health & Wellness", "Travel"];
   const recommendations = [
     { id: "artist", label: "Artist of the Month", icon: Award },
     { id: "year", label: "Book of the Year", icon: Calendar },
@@ -44,7 +44,9 @@ const Home = () => {
           "History": "history historical war",
           "Business": "business management marketing",
           "Art & Design": "art design painting",
-          "Biography": "biography autobiography life"
+          "Biography": "biography autobiography life",
+          "Health & Wellness": "health wellness fitness nutrition",
+          "Travel": "travel guide tourism adventure"
         };
 
         const dbBooks = await api.getBooks();

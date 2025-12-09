@@ -1,9 +1,7 @@
-
 import axios from "../api/axios";
 
 const api = {
 
-  // User Authentication
   login: async (email, password) => {
     const res = await axios.post("/users/login", { email, password });
     return res.data;
@@ -25,12 +23,14 @@ const api = {
   },
 
 
-  // Book Management
+
   getBooks: async (query = null) => {
     try {
+
       const endpoint = query?.trim()
         ? `/books/search?query=${encodeURIComponent(query.trim())}`
         : `/books/search`;
+
       const res = await axios.get(endpoint);
       return res.data.map((book) => ({
         ...book,
@@ -60,8 +60,6 @@ const api = {
     };
   },
 
-
-  // Loan Management
   getBorrowedBooks: async () => {
     try {
       const res = await axios.get("/loans/my-loans");
@@ -82,8 +80,6 @@ const api = {
     return res.data;
   },
 
-
-  // Reservation Management
   createReservation: async (bookId, preferredHours = 168) => {
     const res = await axios.post("/reservations", {
       book_id: bookId,
@@ -108,7 +104,6 @@ const api = {
   },
 
 
-  // Review System
   getBookReviews: async (id) => {
     try {
       const res = await axios.get(`/reviews/${id}`);
@@ -124,7 +119,6 @@ const api = {
     return res.data;
   },
 
-  // Search Suggestions
   getSuggestions: async (query) => {
     if (!query || query.trim().length < 2) return [];
     try {
@@ -136,15 +130,11 @@ const api = {
     }
   },
 
-
-  // Subscription
   subscribeNewsletter: async (email) => {
     const res = await axios.post("/users/subscribe-newsletter", { email });
     return res.data;
   },
 
-
-  // Favorites
   addFavorite: async (book) => {
 
     const res = await axios.post("/favorites", { book });

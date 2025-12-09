@@ -30,13 +30,15 @@ instance.interceptors.response.use(
     console.error("❌ Error:", error.response?.status, error.response?.data);
 
     if ((error.response?.status === 401 || error.response?.status === 403) && !error.config.url.includes('/login')) {
-      localStorage.removeItem('token');
+      
+      localStorage.removeItem('token')
+      
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
     }
 
-    return Promise.reject(error);
+    return Promise.reject(error); 
   }
 );
 
