@@ -104,3 +104,10 @@ CREATE INDEX IF NOT EXISTS idx_loans_status ON loans(status);
 CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id);
 CREATE INDEX IF NOT EXISTS idx_reservations_book ON reservations(book_id);
 CREATE INDEX IF NOT EXISTS idx_reservations_user ON reservations(user_id);
+
+-- Newsletter Subscribers table
+CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+  subscriber_id SERIAL PRIMARY KEY,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  subscribed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

@@ -1,33 +1,56 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  User, Mail, Lock, Camera, Save, LogOut,
-  Eye, EyeOff, Loader2, Edit2, X
+  User,
+  Mail,
+  Lock,
+  Save,
+  LogOut,
+  Eye,
+  EyeOff,
+  Loader2,
+  Edit2,
+  X,
 } from "lucide-react";
-import { Toaster, toast } from 'react-hot-toast';
+import { Toaster, toast } from "react-hot-toast";
 import Swal from "sweetalert2";
 import { useAuth } from "../hooks/useAuth";
 
 const TabButton = ({ value, icon: Icon, label, isActive, onClick }) => (
   <button
     onClick={() => onClick(value)}
-    className={`flex items-center gap-2 whitespace-nowrap px-4 py-2 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base ${isActive
-      ? "bg-[#0770ad] text-white shadow-md"
-      : "text-gray-600 hover:bg-gray-100 hover:text-[#0770ad] bg-white md:bg-transparent border md:border-none border-gray-100"
-      }`}
+    className={`flex items-center gap-2 whitespace-nowrap px-4 py-2 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base ${
+      isActive
+        ? "bg-[#0770ad] text-white shadow-md"
+        : "text-gray-600 hover:bg-gray-100 hover:text-[#0770ad] bg-white md:bg-transparent border md:border-none border-gray-100"
+    }`}
   >
     <Icon className="w-5 h-5" />
     <span className="hidden sm:inline">{label}</span>
   </button>
 );
 
-const Input = ({ label, type = "text", value, onChange, placeholder, required = false, disabled = false, readOnly = false, icon: Icon }) => (
+const Input = ({
+  label,
+  type = "text",
+  value,
+  onChange,
+  placeholder,
+  required = false,
+  disabled = false,
+  readOnly = false,
+  icon: Icon,
+}) => (
   <div>
     <label className="block font-semibold mb-2 text-gray-700 flex items-center gap-2">
       {Icon && <Icon className="w-4 h-4 text-gray-400" />}
       {label}
       {required && <span className="text-red-500">*</span>}
-      {readOnly && <span className="text-xs text-gray-400 font-normal ml-auto bg-gray-100 px-2 py-0.5 rounded">Read-only</span>}
+      {readOnly && (
+        <span className="text-xs text-gray-400 font-normal ml-auto bg-gray-100 px-2 py-0.5 rounded">
+          Read-only
+        </span>
+      )}
     </label>
     <input
       type={type}
@@ -38,15 +61,23 @@ const Input = ({ label, type = "text", value, onChange, placeholder, required = 
       disabled={disabled}
       readOnly={readOnly}
       className={`w-full p-3 border rounded-xl focus:outline-none transition 
-        ${readOnly || disabled
-          ? "bg-gray-50 border-gray-200 text-gray-500 resize-none cursor-default"
-          : "bg-white border-gray-300 focus:ring-2 focus:ring-[#0770ad] shadow-sm"
+        ${
+          readOnly || disabled
+            ? "bg-gray-50 border-gray-200 text-gray-500 resize-none cursor-default"
+            : "bg-white border-gray-300 focus:ring-2 focus:ring-[#0770ad] shadow-sm"
         }`}
     />
   </div>
 );
 
-const PasswordInput = ({ label, value, onChange, show, onToggle, disabled }) => (
+const PasswordInput = ({
+  label,
+  value,
+  onChange,
+  show,
+  onToggle,
+  disabled,
+}) => (
   <div>
     <label className="block font-semibold mb-2 text-gray-700 flex items-center gap-2">
       <Lock className="w-4 h-4 text-gray-400" />
@@ -80,7 +111,6 @@ const Settings = () => {
   const { user, logout, updateProfile, changePassword } = useAuth();
   const navigate = useNavigate();
 
-
   const [profileForm, setProfileForm] = useState({
     firstName: "",
     lastName: "",
@@ -91,7 +121,6 @@ const Settings = () => {
   });
 
   const [originalData, setOriginalData] = useState({});
-
 
   const [passwordForm, setPasswordForm] = useState({
     current: "",
@@ -104,7 +133,6 @@ const Settings = () => {
     new: false,
     confirm: false,
   });
-
 
   useEffect(() => {
     if (user) {
@@ -121,12 +149,10 @@ const Settings = () => {
     }
   }, [user]);
 
-
   const handleCancelEdit = () => {
     setProfileForm(originalData);
     setIsEditing(false);
   };
-
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
@@ -138,7 +164,7 @@ const Settings = () => {
         lastName: profileForm.lastName,
         mobile: profileForm.mobile,
         gender: profileForm.gender,
-        address: profileForm.address
+        address: profileForm.address,
       });
 
       toast.success("Profile updated successfully!");
@@ -151,7 +177,6 @@ const Settings = () => {
       setLoading(false);
     }
   };
-
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
@@ -168,7 +193,7 @@ const Settings = () => {
     try {
       await changePassword({
         currentPassword: passwordForm.current,
-        newPassword: passwordForm.newPass
+        newPassword: passwordForm.newPass,
       });
       toast.success("Password changed successfully!");
       setPasswordForm({ current: "", newPass: "", confirm: "" });
@@ -179,26 +204,25 @@ const Settings = () => {
     }
   };
 
-
   const handleLogout = () => {
     Swal.fire({
-      title: 'Are you sure?',
+      title: "Are you sure?",
       text: "You will be logged out of your session.",
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#0770ad',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, Logout'
+      confirmButtonColor: "#0770ad",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, Logout",
     }).then((result) => {
       if (result.isConfirmed) {
         logout();
         navigate("/login");
         Swal.fire({
-          title: 'Logged Out!',
-          text: 'You have been successfully logged out.',
-          icon: 'success',
+          title: "Logged Out!",
+          text: "You have been successfully logged out.",
+          icon: "success",
           timer: 1500,
-          showConfirmButton: false
+          showConfirmButton: false,
         });
       }
     });
@@ -209,37 +233,55 @@ const Settings = () => {
       <Toaster position="top-center" reverseOrder={false} />
 
       <div className="container mx-auto py-8 md:py-10 flex flex-col md:flex-row gap-8 md:gap-12 px-6 lg:px-16">
-
         <aside className="w-full md:w-1/4 shrink-0 space-y-4 md:space-y-6">
-          <h2 className="text-2xl font-bold mb-2 md:mb-6 text-gray-800">Settings</h2>
+          <h2 className="text-2xl font-bold mb-2 md:mb-6 text-gray-800">
+            Settings
+          </h2>
           <nav className="flex md:flex-col gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-            <TabButton value="profile" icon={User} label="Profile" isActive={tab === "profile"} onClick={setTab} />
-            <TabButton value="password" icon={Lock} label="Password" isActive={tab === "password"} onClick={setTab} />
+            <TabButton
+              value="profile"
+              icon={User}
+              label="Profile"
+              isActive={tab === "profile"}
+              onClick={setTab}
+            />
+            <TabButton
+              value="password"
+              icon={Lock}
+              label="Password"
+              isActive={tab === "password"}
+              onClick={setTab}
+            />
           </nav>
         </aside>
 
         <main className="flex-1 bg-white rounded-3xl shadow-sm p-6 md:p-12 border border-gray-100">
-
           {tab === "profile" && (
             <>
-
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-10 border-b border-gray-100 pb-8">
                 <div className="relative group shrink-0">
                   <img
-                    src={`https://ui-avatars.com/api/?name=${user?.username || 'User'}&background=0770ad&color=fff&size=128&bold=true`}
+                    src={`https://ui-avatars.com/api/?name=${
+                      user?.username || "User"
+                    }&background=0770ad&color=fff&size=128&bold=true`}
                     className="w-24 h-24 rounded-full object-cover border-4 border-gray-50 shadow-md"
                     alt="Profile"
                   />
                 </div>
                 <div className="flex flex-col text-center sm:text-left">
-                  <h3 className="font-black text-3xl text-gray-900 mb-1">{user?.username || "Guest"}</h3>
+                  <h3 className="font-black text-3xl text-gray-900 mb-1">
+                    {user?.username || "Guest"}
+                  </h3>
                   <p className="text-gray-500 font-medium">{user?.email}</p>
 
                   <div className="mt-3 flex justify-center sm:justify-start">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${user?.role === 'admin'
-                      ? 'bg-purple-100 text-purple-700 border border-purple-200'
-                      : 'bg-blue-50 text-[#0770ad] border border-blue-100'
-                      }`}>
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                        user?.role === "admin"
+                          ? "bg-purple-100 text-purple-700 border border-purple-200"
+                          : "bg-blue-50 text-[#0770ad] border border-blue-100"
+                      }`}
+                    >
                       Role: {user?.role || "USER"}
                     </span>
                   </div>
@@ -247,7 +289,9 @@ const Settings = () => {
               </div>
 
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-gray-800">Personal Information</h3>
+                <h3 className="text-xl font-bold text-gray-800">
+                  Personal Information
+                </h3>
                 {!isEditing && (
                   <button
                     onClick={() => setIsEditing(true)}
@@ -259,19 +303,32 @@ const Settings = () => {
                 )}
               </div>
 
-              <form onSubmit={handleProfileSubmit} className="space-y-6 md:space-y-8">
+              <form
+                onSubmit={handleProfileSubmit}
+                className="space-y-6 md:space-y-8"
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Input
                     label="First Name"
                     value={profileForm.firstName}
-                    onChange={(e) => setProfileForm({ ...profileForm, firstName: e.target.value })}
+                    onChange={(e) =>
+                      setProfileForm({
+                        ...profileForm,
+                        firstName: e.target.value,
+                      })
+                    }
                     placeholder="First name"
                     readOnly={!isEditing}
                   />
                   <Input
                     label="Last Name"
                     value={profileForm.lastName}
-                    onChange={(e) => setProfileForm({ ...profileForm, lastName: e.target.value })}
+                    onChange={(e) =>
+                      setProfileForm({
+                        ...profileForm,
+                        lastName: e.target.value,
+                      })
+                    }
                     placeholder="Last name"
                     readOnly={!isEditing}
                   />
@@ -289,7 +346,9 @@ const Settings = () => {
                   <Input
                     label="Mobile Number"
                     value={profileForm.mobile}
-                    onChange={(e) => setProfileForm({ ...profileForm, mobile: e.target.value })}
+                    onChange={(e) =>
+                      setProfileForm({ ...profileForm, mobile: e.target.value })
+                    }
                     placeholder="08X-XXX-XXXX"
                     readOnly={!isEditing}
                   />
@@ -297,16 +356,36 @@ const Settings = () => {
 
                 <div className="grid grid-cols-1 gap-6">
                   <div>
-                    <label className="block font-semibold mb-2 text-gray-700">Gender</label>
-                    <div className={`flex gap-6 mt-3 p-3 rounded-xl border ${!isEditing ? 'bg-gray-50 border-gray-200' : 'bg-white border-gray-200'}`}>
+                    <label className="block font-semibold mb-2 text-gray-700">
+                      Gender
+                    </label>
+                    <div
+                      className={`flex gap-6 mt-3 p-3 rounded-xl border ${
+                        !isEditing
+                          ? "bg-gray-50 border-gray-200"
+                          : "bg-white border-gray-200"
+                      }`}
+                    >
                       {["Male", "Female", "Other"].map((gender) => (
-                        <label key={gender} className={`flex items-center gap-2 ${!isEditing ? 'cursor-default opacity-70' : 'cursor-pointer'}`}>
+                        <label
+                          key={gender}
+                          className={`flex items-center gap-2 ${
+                            !isEditing
+                              ? "cursor-default opacity-70"
+                              : "cursor-pointer"
+                          }`}
+                        >
                           <input
                             type="radio"
                             name="gender"
                             value={gender}
                             checked={profileForm.gender === gender}
-                            onChange={(e) => setProfileForm({ ...profileForm, gender: e.target.value })}
+                            onChange={(e) =>
+                              setProfileForm({
+                                ...profileForm,
+                                gender: e.target.value,
+                              })
+                            }
                             disabled={!isEditing}
                             className="accent-[#0770ad] w-5 h-5"
                           />
@@ -318,15 +397,23 @@ const Settings = () => {
                 </div>
 
                 <div>
-                  <label className="block font-semibold mb-2 text-gray-700">Address</label>
+                  <label className="block font-semibold mb-2 text-gray-700">
+                    Address
+                  </label>
                   <textarea
                     value={profileForm.address}
-                    onChange={(e) => setProfileForm({ ...profileForm, address: e.target.value })}
+                    onChange={(e) =>
+                      setProfileForm({
+                        ...profileForm,
+                        address: e.target.value,
+                      })
+                    }
                     className={`w-full p-3 border rounded-xl focus:outline-none transition 
-                        ${!isEditing
-                        ? "bg-gray-50 border-gray-200 text-gray-500 resize-none cursor-default"
-                        : "bg-white border-gray-300 focus:ring-2 focus:ring-[#0770ad]"
-                      }`}
+                        ${
+                          !isEditing
+                            ? "bg-gray-50 border-gray-200 text-gray-500 resize-none cursor-default"
+                            : "bg-white border-gray-300 focus:ring-2 focus:ring-[#0770ad]"
+                        }`}
                     rows="3"
                     placeholder="Residential Address..."
                     readOnly={!isEditing}
@@ -340,7 +427,11 @@ const Settings = () => {
                       disabled={loading}
                       className="w-full sm:w-auto px-8 py-3 rounded-xl bg-[#0770ad] text-white font-bold hover:bg-[#055a8c] transition shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
                     >
-                      {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                      {loading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Save className="w-5 h-5" />
+                      )}
                       Save Changes
                     </button>
 
@@ -374,42 +465,73 @@ const Settings = () => {
 
           {tab === "password" && (
             <form onSubmit={handlePasswordSubmit} className="space-y-6">
-              <h2 className="text-2xl font-bold mb-6 text-gray-800">Change Password</h2>
+              <h2 className="text-2xl font-bold mb-6 text-gray-800">
+                Change Password
+              </h2>
               <PasswordInput
                 label="Current Password"
                 value={passwordForm.current}
-                onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
+                onChange={(e) =>
+                  setPasswordForm({ ...passwordForm, current: e.target.value })
+                }
                 show={showPasswords.current}
-                onToggle={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
+                onToggle={() =>
+                  setShowPasswords({
+                    ...showPasswords,
+                    current: !showPasswords.current,
+                  })
+                }
                 disabled={loading}
               />
               <PasswordInput
                 label="New Password"
                 value={passwordForm.newPass}
-                onChange={(e) => setPasswordForm({ ...passwordForm, newPass: e.target.value })}
+                onChange={(e) =>
+                  setPasswordForm({ ...passwordForm, newPass: e.target.value })
+                }
                 show={showPasswords.new}
-                onToggle={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
+                onToggle={() =>
+                  setShowPasswords({
+                    ...showPasswords,
+                    new: !showPasswords.new,
+                  })
+                }
                 disabled={loading}
               />
               <PasswordInput
                 label="Confirm New Password"
                 value={passwordForm.confirm}
-                onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
+                onChange={(e) =>
+                  setPasswordForm({ ...passwordForm, confirm: e.target.value })
+                }
                 show={showPasswords.confirm}
-                onToggle={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
+                onToggle={() =>
+                  setShowPasswords({
+                    ...showPasswords,
+                    confirm: !showPasswords.confirm,
+                  })
+                }
                 disabled={loading}
               />
               <button
                 type="submit"
-                disabled={loading || !passwordForm.current || !passwordForm.newPass || !passwordForm.confirm}
+                disabled={
+                  loading ||
+                  !passwordForm.current ||
+                  !passwordForm.newPass ||
+                  !passwordForm.confirm
+                }
                 className="w-full sm:w-auto px-8 py-3 rounded-xl bg-[#0770ad] text-white font-bold hover:bg-[#055a8c] transition shadow-md disabled:opacity-50 flex items-center justify-center gap-2 mt-4"
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Lock className="w-5 h-5" />}
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Lock className="w-5 h-5" />
+                )}
                 Update Password
               </button>
             </form>
           )}
-
         </main>
       </div>
     </div>

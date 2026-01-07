@@ -1,13 +1,36 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; 
-import { Mail, Lock, User, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Mail,
+  Lock,
+  User,
+  Eye,
+  EyeOff,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import toast from "react-hot-toast"; 
+import toast from "react-hot-toast";
 
-const Input = ({ icon: Icon, type = "text", placeholder, value, onChange, required = true, id, disabled, error }) => (
+const Input = ({
+  icon: Icon,
+  type = "text",
+  placeholder,
+  value,
+  onChange,
+  required = true,
+  id,
+  disabled,
+  error,
+}) => (
   <div className="relative group">
-    <Icon className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors w-5 h-5 ${error ? 'text-red-500' : 'text-gray-400 group-focus-within:text-[#0770ad]'
-      }`} />
+    <Icon
+      className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors w-5 h-5 ${
+        error
+          ? "text-red-500"
+          : "text-gray-400 group-focus-within:text-[#0770ad]"
+      }`}
+    />
     <input
       id={id}
       type={type}
@@ -16,18 +39,33 @@ const Input = ({ icon: Icon, type = "text", placeholder, value, onChange, requir
       onChange={onChange}
       required={required}
       disabled={disabled}
-      className={`w-full bg-gray-50 border rounded-xl px-12 py-4 text-gray-700 focus:outline-none focus:ring-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${error
-        ? 'border-red-300 focus:ring-red-500/50 focus:border-red-500'
-        : 'border-gray-100 focus:ring-[#0770ad]/50 focus:border-[#0770ad]'
-        }`}
+      className={`w-full bg-gray-50 border rounded-xl px-12 py-4 text-gray-700 focus:outline-none focus:ring-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+        error
+          ? "border-red-300 focus:ring-red-500/50 focus:border-red-500"
+          : "border-gray-100 focus:ring-[#0770ad]/50 focus:border-[#0770ad]"
+      }`}
     />
   </div>
 );
 
-const PasswordInput = ({ placeholder, value, onChange, id, disabled, showPw, setShowPw, error }) => (
+const PasswordInput = ({
+  placeholder,
+  value,
+  onChange,
+  id,
+  disabled,
+  showPw,
+  setShowPw,
+  error,
+}) => (
   <div className="relative group">
-    <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors w-5 h-5 ${error ? 'text-red-500' : 'text-gray-400 group-focus-within:text-[#0770ad]'
-      }`} />
+    <Lock
+      className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors w-5 h-5 ${
+        error
+          ? "text-red-500"
+          : "text-gray-400 group-focus-within:text-[#0770ad]"
+      }`}
+    />
     <input
       id={id}
       type={showPw ? "text" : "password"}
@@ -36,10 +74,11 @@ const PasswordInput = ({ placeholder, value, onChange, id, disabled, showPw, set
       onChange={onChange}
       required
       disabled={disabled}
-      className={`w-full bg-gray-50 border rounded-xl px-12 pr-16 py-4 text-gray-700 focus:outline-none focus:ring-2 transition-all disabled:opacity-50 ${error
-        ? 'border-red-300 focus:ring-red-500/50 focus:border-red-500'
-        : 'border-gray-100 focus:ring-[#0770ad]/50 focus:border-[#0770ad]'
-        }`}
+      className={`w-full bg-gray-50 border rounded-xl px-12 pr-16 py-4 text-gray-700 focus:outline-none focus:ring-2 transition-all disabled:opacity-50 ${
+        error
+          ? "border-red-300 focus:ring-red-500/50 focus:border-red-500"
+          : "border-gray-100 focus:ring-[#0770ad]/50 focus:border-[#0770ad]"
+      }`}
     />
     <button
       type="button"
@@ -56,7 +95,7 @@ const Login = () => {
   const [tab, setTab] = useState("login");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const { login, register } = useAuth();
 
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
@@ -64,17 +103,17 @@ const Login = () => {
     name: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
 
   const [errors, setErrors] = useState({});
   const passwordsMatch = registerForm.password === registerForm.confirmPassword;
-  const showPasswordError = registerForm.password && registerForm.confirmPassword && !passwordsMatch;
+  const showPasswordError =
+    registerForm.password && registerForm.confirmPassword && !passwordsMatch;
 
-  
   const handleLogin = async (e) => {
     e.preventDefault();
-    e.stopPropagation(); 
+    e.stopPropagation();
     setLoading(true);
     setErrors({});
 
@@ -84,22 +123,23 @@ const Login = () => {
       const result = await login(loginForm.email, loginForm.password);
       console.log("Login result:", result);
 
-      
       if (!result) {
         throw new Error("No response from login service");
       }
 
       if (!result.success) {
-        const errorMsg = typeof result.message === 'string'
-          ? result.message
-          : result.message?.message || "Login failed. Please check your credentials."; 
+        const errorMsg =
+          typeof result.message === "string"
+            ? result.message
+            : result.message?.message ||
+              "Login failed. Please check your credentials.";
 
         console.log("Login error:", errorMsg);
         toast.error(errorMsg);
-        setLoginForm(prev => ({ ...prev, password: "" }));
+        setLoginForm((prev) => ({ ...prev, password: "" }));
       } else {
         console.log("Login success, navigating...");
-        navigate('/');
+        navigate("/");
         setTimeout(() => {
           toast.success(`Welcome back, ${result.user.username}!`);
         }, 100);
@@ -112,7 +152,6 @@ const Login = () => {
     }
   };
 
-  
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -136,17 +175,19 @@ const Login = () => {
       );
 
       if (!result.success) {
-        const errorMsg = typeof result.message === 'string'
-          ? result.message
-          : "Registration failed. Please try again.";
+        const errorMsg =
+          typeof result.message === "string"
+            ? result.message
+            : "Registration failed. Please try again.";
         toast.error(errorMsg);
       } else {
-        navigate('/'); 
+        navigate("/");
         setTimeout(() => {
           toast.success(`Welcome, ${result.user.username}!`);
         }, 100);
       }
     } catch (err) {
+      console.error(err);
       toast.error("Unable to connect to server");
     } finally {
       setLoading(false);
@@ -155,7 +196,6 @@ const Login = () => {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-linear-to-br from-[#0770ad] to-[#298dc5] p-6 relative overflow-hidden">
-
       <div className="absolute top-0 right-0 w-1/2 h-full bg-white/5 rounded-bl-[200px]" />
       <div className="absolute bottom-0 left-0 w-2/5 h-4/5 bg-white/5 rounded-tr-[200px]" />
 
@@ -167,13 +207,11 @@ const Login = () => {
         <p className="text-blue-100 leading-relaxed text-lg">
           {tab === "login"
             ? "To keep connected with us please login with your personal info."
-            : "Join us today and start your reading journey!"
-          }
+            : "Join us today and start your reading journey!"}
         </p>
       </div>
 
       <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-10 z-10">
-
         <div className="flex justify-center mb-8 bg-gray-100 p-1 rounded-full w-fit mx-auto">
           {["login", "register"].map((t) => (
             <button
@@ -183,10 +221,11 @@ const Login = () => {
                 setTab(t);
                 setErrors({});
               }}
-              className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all ${tab === t
-                ? "bg-white text-[#0770ad] shadow-sm"
-                : "text-gray-400 hover:text-gray-600"
-                }`}
+              className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all ${
+                tab === t
+                  ? "bg-white text-[#0770ad] shadow-sm"
+                  : "text-gray-400 hover:text-gray-600"
+              }`}
             >
               {t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
@@ -264,8 +303,12 @@ const Login = () => {
         {tab === "register" && (
           <form className="space-y-5" onSubmit={handleRegister}>
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Create Account</h2>
-              <p className="text-gray-400 text-sm">Use your email for registration</p>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                Create Account
+              </h2>
+              <p className="text-gray-400 text-sm">
+                Use your email for registration
+              </p>
             </div>
 
             <Input
@@ -313,33 +356,46 @@ const Login = () => {
               placeholder="Confirm Password"
               value={registerForm.confirmPassword}
               onChange={(e) => {
-                setRegisterForm({ ...registerForm, confirmPassword: e.target.value });
+                setRegisterForm({
+                  ...registerForm,
+                  confirmPassword: e.target.value,
+                });
                 setErrors({});
               }}
               id="reg-pass2"
               disabled={loading}
               showPw={showPw}
               setShowPw={setShowPw}
-              error={showPasswordError || errors.field === "password" || errors.field === "all"}
+              error={
+                showPasswordError ||
+                errors.field === "password" ||
+                errors.field === "all"
+              }
             />
 
             {showPasswordError && (
               <div className="bg-red-50 border-l-4 border-red-500 p-3 rounded flex items-start gap-2">
                 <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-red-700 text-sm font-medium">Passwords do not match</p>
+                <p className="text-red-700 text-sm font-medium">
+                  Passwords do not match
+                </p>
               </div>
             )}
 
             {registerForm.password && passwordsMatch && !errors.register && (
               <div className="bg-green-50 border-l-4 border-green-500 p-3 rounded">
-                <p className="text-green-700 text-sm font-medium">✓ Passwords match</p>
+                <p className="text-green-700 text-sm font-medium">
+                  ✓ Passwords match
+                </p>
               </div>
             )}
 
             {errors.register && (
               <div className="bg-red-50 border-l-4 border-red-500 p-3 rounded flex items-start gap-2">
                 <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-red-700 text-sm font-medium">{errors.register}</p>
+                <p className="text-red-700 text-sm font-medium">
+                  {errors.register}
+                </p>
               </div>
             )}
 
@@ -362,9 +418,13 @@ const Login = () => {
 
         <div className="mt-6 text-center text-xs text-gray-500">
           By continuing, you agree to our{" "}
-          <a href="#" className="text-[#0770ad] hover:underline">Terms of Service</a>
-          {" "}and{" "}
-          <a href="#" className="text-[#0770ad] hover:underline">Privacy Policy</a>
+          <a href="#" className="text-[#0770ad] hover:underline">
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a href="#" className="text-[#0770ad] hover:underline">
+            Privacy Policy
+          </a>
         </div>
       </div>
     </div>

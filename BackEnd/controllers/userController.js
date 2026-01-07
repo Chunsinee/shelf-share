@@ -390,6 +390,6 @@ exports.subscribeNewsletter = async (req, res) => {
 
   } catch (err) {
     console.error('Newsletter subscription error:', err);
-    res.status(500).json({ message: "Failed to subscribe. Please try again." });
+    res.status(500).json({ message: `Failed to subscribe: ${err.message}` });
   }
 };
