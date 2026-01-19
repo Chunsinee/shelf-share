@@ -1,10 +1,12 @@
 import React, { Suspense, lazy } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import { Toaster } from "react-hot-toast";
 import ScrollToTop from "./components/ScrollToTop";
 import ErrorBoundary from "./components/ErrorBoundary";
+import PageTransition from "./components/PageTransition";
 import { Loader2 } from "lucide-react";
 
 // Lazy load pages
@@ -19,6 +21,8 @@ const Favbooks = lazy(() => import("./pages/Favbooks"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 function App() {
+  const location = useLocation();
+
   return (
     <ErrorBoundary>
       <ScrollToTop />
@@ -43,21 +47,87 @@ function App() {
             </div>
           }
         >
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/books" element={<AllBooks />} />
-            <Route path="/book/:id" element={<BookDetail />} />
-            <Route path="/borrow" element={<BorrowReturn />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/favorites" element={<Favbooks />} />
-            <Route path="/forgetpass" element={<Forgetpass />} />
-            <Route path="/settings" element={<Settings />} />
+          <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+              <Route
+                path="/"
+                element={
+                  <PageTransition>
+                    <Home />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/books"
+                element={
+                  <PageTransition>
+                    <AllBooks />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/book/:id"
+                element={
+                  <PageTransition>
+                    <BookDetail />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/borrow"
+                element={
+                  <PageTransition>
+                    <BorrowReturn />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/login"
+                element={
+                  <PageTransition>
+                    <Login />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/favorites"
+                element={
+                  <PageTransition>
+                    <Favbooks />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/forgetpass"
+                element={
+                  <PageTransition>
+                    <Forgetpass />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <PageTransition>
+                    <Settings />
+                  </PageTransition>
+                }
+              />
 
-            <Route path="/register" element={<Navigate to="/login" />} />
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
-          </Routes>
+              <Route path="/register" element={<Navigate to="/login" />} />
+              <Route
+                path="/reset-password/:token"
+                element={
+                  <PageTransition>
+                    <ResetPassword />
+                  </PageTransition>
+                }
+              />
+            </Routes>
+          </AnimatePresence>
         </Suspense>
       </main>
+
       <Footer />
     </ErrorBoundary>
   );
