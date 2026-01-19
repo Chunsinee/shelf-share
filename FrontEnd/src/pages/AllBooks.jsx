@@ -14,7 +14,7 @@ import Navbar from "../components/Navbar";
 import BookCard from "../components/BookCard";
 import apiService from "../services/api";
 
-import apiAxios from "../api/axios";
+// import apiAxios from "../api/axios";
 import toast from "react-hot-toast";
 
 const AllBooks = () => {
@@ -41,10 +41,10 @@ const AllBooks = () => {
       setLoading(true);
       try {
         const [cats, books] = await Promise.all([
-          apiAxios.get("/categories"),
+          apiService.getCategories(),
           apiService.getBooks(),
         ]);
-        setCategories(cats.data || []);
+        setCategories(cats || []);
         setLibrary(books || []);
       } finally {
         setLoading(false);
@@ -67,10 +67,8 @@ const AllBooks = () => {
 
     debounce.current = setTimeout(async () => {
       try {
-        const res = await apiAxios.get("/books/suggest", {
-          params: { query: query.trim() },
-        });
-        setSuggestions(res.data || []);
+        const data = await apiService.getSuggestions(query.trim());
+        setSuggestions(data || []);
         setShowSuggestions(true);
         setSelectedIndex(-1);
       } catch (err) {
@@ -142,10 +140,8 @@ const AllBooks = () => {
     setSearchPage(1);
 
     try {
-      const res = await apiAxios.get("/books/search", {
-        params: { query: query.trim() },
-      });
-      setOpenLibrary(res.data || []);
+      const results = await apiService.getBooks(query.trim());
+      setOpenLibrary(results || []);
     } catch (err) {
       console.error("Search error:", err);
       setOpenLibrary([]);

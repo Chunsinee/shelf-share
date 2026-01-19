@@ -22,6 +22,16 @@ const api = {
     return res.data;
   },
 
+  getCategories: async () => {
+    try {
+      const res = await axios.get("/categories");
+      return res.data;
+    } catch (e) {
+      console.error("❌ getCategories error:", e);
+      return [];
+    }
+  },
+
 
 
   getBooks: async (query = null) => {
