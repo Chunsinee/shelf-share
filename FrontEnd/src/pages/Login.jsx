@@ -171,7 +171,7 @@ const Login = () => {
       const result = await register(
         registerForm.name,
         registerForm.email,
-        registerForm.password
+        registerForm.password,
       );
 
       if (!result.success) {
@@ -200,14 +200,18 @@ const Login = () => {
       <div className="absolute bottom-0 left-0 w-2/5 h-4/5 bg-white/5 rounded-tr-[200px]" />
 
       <div className="hidden lg:flex flex-col text-white max-w-lg mr-16 z-10">
-        <h1 className="text-5xl font-black mb-3">WELCOME BACK!</h1>
+        <h1 className="text-5xl font-black mb-3">
+          {tab === "login" ? "WELCOME BACK!" : "JOIN US TODAY!"}
+        </h1>
         <h3 className="uppercase tracking-wide font-bold mb-4 text-blue-100">
-          We're glad to see you again.
+          {tab === "login"
+            ? "We're glad to see you again."
+            : "Create an account and start reading."}
         </h3>
         <p className="text-blue-100 leading-relaxed text-lg">
           {tab === "login"
             ? "To keep connected with us please login with your personal info."
-            : "Join us today and start your reading journey!"}
+            : "Join our community of book lovers and discover your next favorite read!"}
         </p>
       </div>
 
