@@ -1,6 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, Settings, ChevronDown, User as UserIcon, BookOpen, Heart, Repeat, LogOut, Sparkles } from "lucide-react";
+import {
+  Menu,
+  X,
+  Settings,
+  ChevronDown,
+  User as UserIcon,
+  BookOpen,
+  Heart,
+  Repeat,
+  LogOut,
+  Sparkles,
+} from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 
 const Navbar = () => {
@@ -38,17 +49,13 @@ const Navbar = () => {
     if (user.first_name) return user.first_name;
     if (user.firstName) return user.firstName;
     if (user.username) return user.username;
-    return user.email?.split('@')[0] || "User";
+    return user.email?.split("@")[0] || "User";
   };
 
   return (
     <>
-      <nav
-
-        className="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-white/70 backdrop-blur-md shadow-sm border-b border-white/20 py-4"
-      >
+      <nav className="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-white/70 backdrop-blur-md shadow-sm border-b border-white/20 py-4">
         <div className="max-w-7xl mx-auto px-6 md:px-8 flex items-center justify-between">
-
           <Link to="/" className="flex items-center gap-2 group">
             <div className="p-2 rounded-xl transition-all duration-300 bg-blue-50 text-[#0770ad]">
               <BookOpen className="w-6 h-6" />
@@ -59,14 +66,14 @@ const Navbar = () => {
           </Link>
 
           <div className="hidden lg:flex items-center gap-2">
-
             <div className="flex items-center p-1 rounded-full bg-slate-100/50 mr-4">
               <Link
                 to="/books"
-                className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${isActive("/books")
-                  ? "bg-white text-[#0770ad] shadow-sm"
-                  : "text-slate-600 hover:text-[#0770ad] hover:bg-white/50"
-                  }`}
+                className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  isActive("/books")
+                    ? "bg-white text-[#0770ad] shadow-sm"
+                    : "text-slate-600 hover:text-[#0770ad] hover:bg-white/50"
+                }`}
               >
                 Explore
               </Link>
@@ -74,13 +81,16 @@ const Navbar = () => {
               <div className="relative" ref={shelfRef}>
                 <button
                   onClick={() => setIsShelfOpen(!isShelfOpen)}
-                  className={`flex items-center gap-1 px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${["/favorites", "/borrow"].includes(currentPath)
-                    ? "bg-white text-[#0770ad] shadow-sm"
-                    : "text-slate-600 hover:text-[#0770ad] hover:bg-white/50"
-                    }`}
+                  className={`flex items-center gap-1 px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                    ["/favorites", "/borrow"].includes(currentPath)
+                      ? "bg-white text-[#0770ad] shadow-sm"
+                      : "text-slate-600 hover:text-[#0770ad] hover:bg-white/50"
+                  }`}
                 >
                   My Shelf
-                  <ChevronDown className={`w-4 h-4 transition-transform ${isShelfOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform ${isShelfOpen ? "rotate-180" : ""}`}
+                  />
                 </button>
 
                 {isShelfOpen && (
@@ -88,16 +98,22 @@ const Navbar = () => {
                     <div className="p-2 space-y-1">
                       <Link
                         to="/favorites"
-                        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all ${isActive("/favorites") ? "bg-blue-50 text-[#0770ad] font-medium" : "text-slate-600 hover:bg-slate-50 hover:text-[#0770ad]"
-                          }`}
+                        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all ${
+                          isActive("/favorites")
+                            ? "bg-blue-50 text-[#0770ad] font-medium"
+                            : "text-slate-600 hover:bg-slate-50 hover:text-[#0770ad]"
+                        }`}
                         onClick={() => setIsShelfOpen(false)}
                       >
                         <Heart className="w-4 h-4" /> Favorites
                       </Link>
                       <Link
                         to="/borrow"
-                        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all ${isActive("/borrow") ? "bg-blue-50 text-[#0770ad] font-medium" : "text-slate-600 hover:bg-slate-50 hover:text-[#0770ad]"
-                          }`}
+                        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all ${
+                          isActive("/borrow")
+                            ? "bg-blue-50 text-[#0770ad] font-medium"
+                            : "text-slate-600 hover:bg-slate-50 hover:text-[#0770ad]"
+                        }`}
                         onClick={() => setIsShelfOpen(false)}
                       >
                         <Repeat className="w-4 h-4" /> Borrow & Return
@@ -121,8 +137,11 @@ const Navbar = () => {
 
                 <Link
                   to="/settings"
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isActive("/settings") ? "bg-blue-100 text-[#0770ad]" : "text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                    }`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                    isActive("/settings")
+                      ? "bg-blue-100 text-[#0770ad]"
+                      : "text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                  }`}
                 >
                   <Settings className="w-5 h-5" />
                 </Link>
@@ -177,30 +196,54 @@ const Navbar = () => {
                     <UserIcon className="w-8 h-8" />
                   </div>
                   <div>
-                    <p className="text-sm text-blue-500 font-medium">Welcome back,</p>
-                    <p className="font-bold text-lg text-slate-900 capitalize">{getUserName()}</p>
+                    <p className="text-sm text-blue-500 font-medium">
+                      Welcome back,
+                    </p>
+                    <p className="font-bold text-lg text-slate-900 capitalize">
+                      {getUserName()}
+                    </p>
                   </div>
                 </div>
               )}
 
               <div className="space-y-2">
-                <Link to="/books" onClick={() => setIsOpen(false)} className={`flex items-center gap-3 p-4 rounded-xl text-lg font-medium transition-all ${isActive("/books") ? "bg-white shadow-sm text-[#0770ad]" : "text-slate-600 hover:bg-white hover:shadow-sm"}`}>
+                <Link
+                  to="/books"
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-3 p-4 rounded-xl text-lg font-medium transition-all ${isActive("/books") ? "bg-white shadow-sm text-[#0770ad]" : "text-slate-600 hover:bg-white hover:shadow-sm"}`}
+                >
                   <Sparkles className="w-5 h-5" /> Explore Books
                 </Link>
 
                 <div className="pt-4 pb-2">
-                  <p className="px-4 text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">My Shelf</p>
-                  <Link to="/favorites" onClick={() => setIsOpen(false)} className={`flex items-center gap-3 p-4 rounded-xl text-lg font-medium transition-all ${isActive("/favorites") ? "bg-white shadow-sm text-[#0770ad]" : "text-slate-600 hover:bg-white hover:shadow-sm"}`}>
+                  <p className="px-4 text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+                    My Shelf
+                  </p>
+                  <Link
+                    to="/favorites"
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-3 p-4 rounded-xl text-lg font-medium transition-all ${isActive("/favorites") ? "bg-white shadow-sm text-[#0770ad]" : "text-slate-600 hover:bg-white hover:shadow-sm"}`}
+                  >
                     <Heart className="w-5 h-5" /> Favorites
                   </Link>
-                  <Link to="/borrow" onClick={() => setIsOpen(false)} className={`flex items-center gap-3 p-4 rounded-xl text-lg font-medium transition-all ${isActive("/borrow") ? "bg-white shadow-sm text-[#0770ad]" : "text-slate-600 hover:bg-white hover:shadow-sm"}`}>
+                  <Link
+                    to="/borrow"
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-3 p-4 rounded-xl text-lg font-medium transition-all ${isActive("/borrow") ? "bg-white shadow-sm text-[#0770ad]" : "text-slate-600 hover:bg-white hover:shadow-sm"}`}
+                  >
                     <Repeat className="w-5 h-5" /> Borrow & Return
                   </Link>
                 </div>
 
                 <div className="pt-2">
-                  <p className="px-4 text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Account</p>
-                  <Link to="/settings" onClick={() => setIsOpen(false)} className={`flex items-center gap-3 p-4 rounded-xl text-lg font-medium transition-all ${isActive("/settings") ? "bg-white shadow-sm text-[#0770ad]" : "text-slate-600 hover:bg-white hover:shadow-sm"}`}>
+                  <p className="px-4 text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+                    Account
+                  </p>
+                  <Link
+                    to="/settings"
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-3 p-4 rounded-xl text-lg font-medium transition-all ${isActive("/settings") ? "bg-white shadow-sm text-[#0770ad]" : "text-slate-600 hover:bg-white hover:shadow-sm"}`}
+                  >
                     <Settings className="w-5 h-5" /> Settings
                   </Link>
                 </div>

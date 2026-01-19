@@ -30,7 +30,7 @@ const Footer = () => {
       const response = await api.subscribeNewsletter(email);
       toast.success(
         response.message ||
-          "Successfully subscribed! Check your email for confirmation."
+          "Successfully subscribed! Check your email for confirmation.",
       );
       setEmail("");
     } catch (error) {
@@ -49,7 +49,7 @@ const Footer = () => {
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-[100px] translate-y-1/2 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-20 pb-12 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-12 lg:gap-8">
           <div className="lg:col-span-4 space-y-6 text-center lg:text-left flex flex-col items-center lg:items-start">
             <Link to="/" className="inline-flex items-center gap-2 group">
               <div className="bg-white/10 p-2 rounded-xl group-hover:rotate-12 transition-transform duration-500 backdrop-blur-sm border border-white/10">
@@ -76,7 +76,7 @@ const Footer = () => {
             </div>
           </div>
 
-          <div className="lg:col-span-2 col-span-6 flex flex-col items-center lg:items-start">
+          <div className="lg:col-span-2 flex flex-col items-center lg:items-start">
             <h4 className="text-white font-bold mb-6 tracking-wide">
               Discover
             </h4>
@@ -94,8 +94,8 @@ const Footer = () => {
                       item === "Trending Now"
                         ? "/?filter=trending"
                         : item === "Top Rated"
-                        ? "/?filter=top_rated"
-                        : "#"
+                          ? "/?filter=top_rated"
+                          : "#"
                     }
                     className="text-blue-100 hover:text-white hover:pl-2 transition-all duration-300 flex items-center gap-1 group"
                   >
@@ -107,7 +107,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div className="lg:col-span-2 col-span-6 flex flex-col items-center lg:items-start">
+          <div className="lg:col-span-2 flex flex-col items-center lg:items-start">
             <h4 className="text-white font-bold mb-6 tracking-wide">Support</h4>
             <ul className="space-y-4 text-sm flex flex-col items-center lg:items-start">
               {[
