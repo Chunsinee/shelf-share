@@ -1,20 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  BookOpen, Calendar, Clock, CheckCircle, RotateCcw, Trash2, Loader2,
-  ArrowRight, History, Hourglass, XCircle, ChevronLeft, ChevronRight,
-  RefreshCw, BookMarked, ClipboardList, Filter
-} from 'lucide-react';
-import Navbar from '../components/Navbar';
-import api from '../services/api';
-import Swal from 'sweetalert2';
-import toast from 'react-hot-toast'; 
-import FavBtn from '../components/FavBtn';
+  BookOpen,
+  Calendar,
+  Clock,
+  CheckCircle,
+  RotateCcw,
+  Trash2,
+  Loader2,
+  ArrowRight,
+  History,
+  Hourglass,
+  XCircle,
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw,
+  BookMarked,
+  ClipboardList,
+  Filter,
+} from "lucide-react";
+import Navbar from "../components/Navbar";
+import api from "../services/api";
+import Swal from "sweetalert2";
+import toast from "react-hot-toast";
+import FavBtn from "../components/FavBtn";
 
 const BorrowReturn = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('loans');
-  const [historyFilter, setHistoryFilter] = useState('all'); 
+  const [activeTab, setActiveTab] = useState("loans");
+  const [historyFilter, setHistoryFilter] = useState("all");
 
   const [loans, setLoans] = useState([]);
   const [reservations, setReservations] = useState([]);
@@ -33,15 +47,20 @@ const BorrowReturn = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-    setHistoryFilter('all'); 
+    setHistoryFilter("all");
   }, [activeTab]);
 
   const formatDateTime = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     const date = new Date(dateString);
-    return date.toLocaleString('en-GB', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+    return date.toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
     });
   };
 
@@ -59,7 +78,7 @@ const BorrowReturn = () => {
     const oneDay = oneHour * 24;
     const oneWeek = oneDay * 7;
 
-    const p = (n) => n.toString().padStart(2, '0');
+    const p = (n) => n.toString().padStart(2, "0");
 
     if (diff < oneHour) {
       const m = Math.floor(diff / oneMinute);
@@ -93,7 +112,8 @@ const BorrowReturn = () => {
       : now.getTime();
 
     if (res.queue_position > 1) {
-      const additionalWait = (res.queue_position - 1) * (28 * 24 * 60 * 60 * 1000);
+      const additionalWait =
+        (res.queue_position - 1) * (28 * 24 * 60 * 60 * 1000);
       targetTime += additionalWait;
     }
 
@@ -105,36 +125,43 @@ const BorrowReturn = () => {
     try {
       const [allLoans, reservationsData] = await Promise.all([
         api.getBorrowedBooks(),
-        api.getMyReservations()
+        api.getMyReservations(),
       ]);
 
-      const activeLoans = allLoans.filter(l => l.status === 'active');
-      const activeReservations = reservationsData.filter(r => ['active', 'ready'].includes(r.status));
+      const activeLoans = allLoans.filter((l) => l.status === "active");
+      const activeReservations = reservationsData.filter((r) =>
+        ["active", "ready"].includes(r.status),
+      );
 
       const allHistory = [
-        ...allLoans.map(l => ({
+        ...allLoans.map((l) => ({
           ...l,
-          type: 'loan',
-          action: l.status === 'active' ? 'Borrowed' : 'Returned',
-          date: l.status === 'active' ? l.loan_date : l.return_date,
-          status_label: l.status === 'active' ? 'Active' : 'Completed'
+          type: "loan",
+          action: l.status === "active" ? "Borrowed" : "Returned",
+          date: l.status === "active" ? l.loan_date : l.return_date,
+          status_label: l.status === "active" ? "Active" : "Completed",
         })),
-        ...reservationsData.map(r => ({
+        ...reservationsData.map((r) => ({
           ...r,
-          type: 'reservation',
-          action: r.status === 'active' ? 'Reserved' :
-            r.status === 'ready' ? 'Ready to Borrow' :
-              r.status === 'cancelled' ? 'Cancelled' :
-                r.status === 'completed' ? 'Completed' : 'Expired',
+          type: "reservation",
+          action:
+            r.status === "active"
+              ? "Reserved"
+              : r.status === "ready"
+                ? "Ready to Borrow"
+                : r.status === "cancelled"
+                  ? "Cancelled"
+                  : r.status === "completed"
+                    ? "Completed"
+                    : "Expired",
           date: r.reservation_date,
-          status_label: r.status.charAt(0).toUpperCase() + r.status.slice(1)
-        }))
+          status_label: r.status.charAt(0).toUpperCase() + r.status.slice(1),
+        })),
       ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
       setLoans(activeLoans);
       setReservations(activeReservations);
       setHistory(allHistory);
-
     } catch (err) {
       console.error("Error:", err);
     } finally {
@@ -142,84 +169,91 @@ const BorrowReturn = () => {
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleReturn = async (bookId, title) => {
     const result = await Swal.fire({
-      title: 'Return Book?',
+      title: "Return Book?",
       text: `Return "${title}"?`,
-      icon: 'question',
+      icon: "question",
       showCancelButton: true,
-      confirmButtonColor: '#0770ad',
-      confirmButtonText: 'Yes, Return it!'
+      confirmButtonColor: "#0770ad",
+      confirmButtonText: "Yes, Return it!",
     });
 
     if (result.isConfirmed) {
       try {
         await api.returnBook(bookId);
-        toast.success("Book returned successfully!"); 
+        toast.success("Book returned successfully!");
         fetchData();
       } catch (err) {
-        toast.error(err.response?.data || "Failed to return book"); 
+        toast.error(err.response?.data || "Failed to return book");
       }
     }
   };
 
   const handleCancelReservation = async (reservationId, title) => {
     const result = await Swal.fire({
-      title: 'Cancel Reservation?',
+      title: "Cancel Reservation?",
       text: `Remove "${title}" from queue?`,
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      confirmButtonText: 'Yes, Cancel it!'
+      confirmButtonColor: "#d33",
+      confirmButtonText: "Yes, Cancel it!",
     });
 
     if (result.isConfirmed) {
       try {
         await api.cancelReservation(reservationId);
-        toast.success("Reservation cancelled successfully"); 
+        toast.success("Reservation cancelled successfully");
         fetchData();
       } catch (err) {
-        toast.error("Failed to cancel reservation"); 
+        toast.error("Failed to cancel reservation");
       }
     }
   };
 
-  
   const handleClearHistory = async () => {
     const result = await Swal.fire({
-      title: 'Clear All History?',
-      text: 'This will permanently delete your history. This action cannot be undone.',
-      icon: 'warning',
+      title: "Clear All History?",
+      text: "This will permanently delete your history. This action cannot be undone.",
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, Clear All',
-      cancelButtonText: 'Cancel'
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, Clear All",
+      cancelButtonText: "Cancel",
     });
 
     if (result.isConfirmed) {
       setHistory([]);
-      toast.success("History cleared successfully"); 
+      toast.success("History cleared successfully");
     }
   };
 
   const getCurrentList = () => {
     switch (activeTab) {
-      case 'loans': return loans;
-      case 'reservations': return reservations;
-      case 'history': {
-        
-        if (historyFilter === 'borrowed') {
-          return history.filter(h => h.type === 'loan' && h.status === 'active');
+      case "loans":
+        return loans;
+      case "reservations":
+        return reservations;
+      case "history": {
+        if (historyFilter === "borrowed") {
+          return history.filter(
+            (h) => h.type === "loan" && h.status === "active",
+          );
         }
-        if (historyFilter === 'returned') {
-          return history.filter(h => h.type === 'loan' && h.status === 'returned');
+        if (historyFilter === "returned") {
+          return history.filter(
+            (h) => h.type === "loan" && h.status === "returned",
+          );
         }
-        return history; 
+        return history;
       }
-      default: return [];
+      default:
+        return [];
     }
   };
 
@@ -231,17 +265,16 @@ const BorrowReturn = () => {
 
   const handlePageChange = (pageNum) => {
     setCurrentPage(pageNum);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+    <div className="min-h-screen bg-gray-50 pt-12 pb-12">
       <Navbar />
       <div className="container mx-auto px-4 lg:px-16">
-
         <div className="mb-8 flex justify-between items-end">
           <div>
-            <h1 className="text-3xl font-black text-gray-800 mb-2">My Shelf</h1>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">My Shelf</h1>
             <p className="text-gray-500">Manage your books and reservations.</p>
           </div>
           <button
@@ -254,38 +287,71 @@ const BorrowReturn = () => {
 
         <div className="flex gap-4 border-b border-gray-200 mb-8 overflow-x-auto no-scrollbar">
           {[
-            { key: 'loans', icon: BookOpen, label: 'Borrowed', count: loans.length },
-            { key: 'reservations', icon: Clock, label: 'Reservations', count: reservations.length },
-            { key: 'history', icon: ClipboardList, label: 'History', count: history.length }
+            {
+              key: "loans",
+              icon: BookOpen,
+              label: "Borrowed",
+              count: loans.length,
+            },
+            {
+              key: "reservations",
+              icon: Clock,
+              label: "Reservations",
+              count: reservations.length,
+            },
+            {
+              key: "history",
+              icon: ClipboardList,
+              label: "History",
+              count: history.length,
+            },
           ].map(({ key, icon: Icon, label, count }) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className={`pb-4 px-4 font-bold text-sm flex items-center gap-2 transition-all whitespace-nowrap ${activeTab === key
-                ? 'text-[#0770ad] border-b-2 border-[#0770ad]'
-                : 'text-gray-400 hover:text-gray-600'
-                }`}
+              className={`pb-4 px-4 font-bold text-sm flex items-center gap-2 transition-all whitespace-nowrap ${
+                activeTab === key
+                  ? "text-[#0770ad] border-b-2 border-[#0770ad]"
+                  : "text-gray-400 hover:text-gray-600"
+              }`}
             >
               <Icon className="w-4 h-4" />
               {label}
-              <span className={`ml-1 text-xs py-0.5 px-2 rounded-full ${activeTab === key ? 'bg-blue-100 text-[#0770ad]' : 'bg-gray-100 text-gray-500'
-                }`}>
+              <span
+                className={`ml-1 text-xs py-0.5 px-2 rounded-full ${
+                  activeTab === key
+                    ? "bg-blue-100 text-[#0770ad]"
+                    : "bg-gray-100 text-gray-500"
+                }`}
+              >
                 {count}
               </span>
             </button>
           ))}
         </div>
 
-        {activeTab === 'history' && !loading && history.length > 0 && (
+        {activeTab === "history" && !loading && history.length > 0 && (
           <div className="mb-6 flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
               <Filter className="w-4 h-4" />
               <span>Filter:</span>
             </div>
             {[
-              { key: 'all', label: 'All', count: history.length },
-              { key: 'borrowed', label: 'Borrowed', count: history.filter(h => h.type === 'loan' && h.status === 'active').length },
-              { key: 'returned', label: 'Returned', count: history.filter(h => h.type === 'loan' && h.status === 'returned').length }
+              { key: "all", label: "All", count: history.length },
+              {
+                key: "borrowed",
+                label: "Borrowed",
+                count: history.filter(
+                  (h) => h.type === "loan" && h.status === "active",
+                ).length,
+              },
+              {
+                key: "returned",
+                label: "Returned",
+                count: history.filter(
+                  (h) => h.type === "loan" && h.status === "returned",
+                ).length,
+              },
             ].map(({ key, label, count }) => (
               <button
                 key={key}
@@ -293,10 +359,11 @@ const BorrowReturn = () => {
                   setHistoryFilter(key);
                   setCurrentPage(1);
                 }}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${historyFilter === key
-                  ? 'bg-[#0770ad] text-white shadow-sm'
-                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-                  }`}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  historyFilter === key
+                    ? "bg-[#0770ad] text-white shadow-sm"
+                    : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                }`}
               >
                 {label} <span className="ml-1">({count})</span>
               </button>
@@ -318,15 +385,17 @@ const BorrowReturn = () => {
           </div>
         ) : (
           <div className="space-y-6">
-
             {currentItems.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                 {currentItems.map((item) => (
                   <div
-                    key={item.loan_id || item.reservation_id || `${item.type}-${item.book_id}-${item.date}`}
+                    key={
+                      item.loan_id ||
+                      item.reservation_id ||
+                      `${item.type}-${item.book_id}-${item.date}`
+                    }
                     className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex gap-6 relative overflow-hidden transition hover:shadow-md"
                   >
-
                     <div className="absolute top-4 right-4 z-10">
                       <FavBtn book={item} />
                     </div>
@@ -336,17 +405,25 @@ const BorrowReturn = () => {
                       alt={item.title}
                       className="w-24 h-36 object-cover rounded-lg shadow-md cursor-pointer hover:scale-105 transition-transform"
                       onClick={() => navigate(`/book/${item.book_id}`)}
-                      onError={(e) => e.target.src = 'https://via.placeholder.com/150x220?text=No+Cover'}
+                      onError={(e) =>
+                        (e.target.src =
+                          "https://via.placeholder.com/150x220?text=No+Cover")
+                      }
                     />
 
                     <div className="flex-1 flex flex-col justify-between min-w-0">
                       <div>
-                        <h3 className="font-bold text-lg text-gray-800 mb-1 truncate pr-8" title={item.title}>
+                        <h3
+                          className="font-bold text-lg text-gray-800 mb-1 truncate pr-8"
+                          title={item.title}
+                        >
                           {item.title}
                         </h3>
-                        <p className="text-sm text-gray-500 mb-3 truncate">{item.author}</p>
+                        <p className="text-sm text-gray-500 mb-3 truncate">
+                          {item.author}
+                        </p>
 
-                        {activeTab === 'loans' && (
+                        {activeTab === "loans" && (
                           <>
                             <div className="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-2 rounded-lg border border-green-100 w-fit mb-2">
                               <Hourglass className="w-3 h-3 animate-pulse" />
@@ -363,7 +440,7 @@ const BorrowReturn = () => {
                           </>
                         )}
 
-                        {activeTab === 'reservations' && (
+                        {activeTab === "reservations" && (
                           <>
                             <div className="flex items-center gap-2 bg-orange-50 text-orange-600 px-3 py-2 rounded-lg border border-orange-100 w-fit mb-2">
                               <Clock className="w-3 h-3 animate-pulse" />
@@ -374,9 +451,10 @@ const BorrowReturn = () => {
                             <div className="text-xs text-gray-400">
                               Reserved: {formatDateTime(item.reservation_date)}
                             </div>
-                            {item.status === 'ready' && (
+                            {item.status === "ready" && (
                               <div className="text-xs text-green-600 font-bold mt-1 flex items-center gap-1">
-                                <CheckCircle className="w-3 h-3" /> Ready to Borrow!
+                                <CheckCircle className="w-3 h-3" /> Ready to
+                                Borrow!
                               </div>
                             )}
                             <div className="absolute top-0 right-0 bg-orange-100 text-orange-600 text-xs font-bold px-3 py-1 rounded-bl-xl z-20">
@@ -385,39 +463,49 @@ const BorrowReturn = () => {
                           </>
                         )}
 
-                        {activeTab === 'history' && (
+                        {activeTab === "history" && (
                           <>
-                            <div className={`text-xs mt-2 flex items-center gap-1 font-medium px-2 py-1 rounded w-fit ${item.type === 'loan'
-                              ? item.status === 'active'
-                                ? 'text-green-600 bg-green-50'
-                                : 'text-blue-600 bg-blue-50'
-                              : item.status === 'active'
-                                ? 'text-orange-600 bg-orange-50'
-                                : item.status === 'cancelled'
-                                  ? 'text-gray-600 bg-gray-100'
-                                  : item.status === 'expired'
-                                    ? 'text-red-500 bg-red-50'
-                                    : 'text-green-600 bg-green-50'
-                              }`}>
-                              {item.type === 'loan' ? <BookOpen className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                            <div
+                              className={`text-xs mt-2 flex items-center gap-1 font-medium px-2 py-1 rounded w-fit ${
+                                item.type === "loan"
+                                  ? item.status === "active"
+                                    ? "text-green-600 bg-green-50"
+                                    : "text-blue-600 bg-blue-50"
+                                  : item.status === "active"
+                                    ? "text-orange-600 bg-orange-50"
+                                    : item.status === "cancelled"
+                                      ? "text-gray-600 bg-gray-100"
+                                      : item.status === "expired"
+                                        ? "text-red-500 bg-red-50"
+                                        : "text-green-600 bg-green-50"
+                              }`}
+                            >
+                              {item.type === "loan" ? (
+                                <BookOpen className="w-3 h-3" />
+                              ) : (
+                                <Clock className="w-3 h-3" />
+                              )}
                               {item.action}
                             </div>
                             <div className="text-xs text-gray-400 mt-1">
                               {formatDateTime(item.date)}
                             </div>
-                            {item.type === 'reservation' && item.queue_position && (
-                              <div className="text-xs text-gray-400">
-                                Queue Position: #{item.queue_position}
-                              </div>
-                            )}
+                            {item.type === "reservation" &&
+                              item.queue_position && (
+                                <div className="text-xs text-gray-400">
+                                  Queue Position: #{item.queue_position}
+                                </div>
+                              )}
                           </>
                         )}
                       </div>
 
                       <div className="mt-4">
-                        {activeTab === 'loans' && (
+                        {activeTab === "loans" && (
                           <button
-                            onClick={() => handleReturn(item.book_id, item.title)}
+                            onClick={() =>
+                              handleReturn(item.book_id, item.title)
+                            }
                             className="w-full py-2 rounded-lg bg-gray-100 text-gray-600 font-bold hover:bg-[#0770ad] hover:text-white transition-colors text-sm flex items-center justify-center gap-2"
                           >
                             <RotateCcw className="w-4 h-4" />
@@ -425,11 +513,13 @@ const BorrowReturn = () => {
                           </button>
                         )}
 
-                        {activeTab === 'reservations' && (
+                        {activeTab === "reservations" && (
                           <div className="flex gap-2">
-                            {item.status === 'ready' && (
+                            {item.status === "ready" && (
                               <button
-                                onClick={() => navigate(`/book/${item.book_id}`)}
+                                onClick={() =>
+                                  navigate(`/book/${item.book_id}`)
+                                }
                                 className="flex-1 py-2 rounded-lg bg-[#0770ad] text-white font-bold hover:bg-[#055a8c] transition-colors text-sm flex items-center justify-center gap-2"
                               >
                                 <BookOpen className="w-4 h-4" />
@@ -437,8 +527,13 @@ const BorrowReturn = () => {
                               </button>
                             )}
                             <button
-                              onClick={() => handleCancelReservation(item.reservation_id, item.title)}
-                              className={`${item.status === 'ready' ? 'flex-1' : 'w-full'} py-2 rounded-lg border border-red-100 text-red-500 font-bold hover:bg-red-50 transition-colors text-sm flex items-center justify-center gap-2`}
+                              onClick={() =>
+                                handleCancelReservation(
+                                  item.reservation_id,
+                                  item.title,
+                                )
+                              }
+                              className={`${item.status === "ready" ? "flex-1" : "w-full"} py-2 rounded-lg border border-red-100 text-red-500 font-bold hover:bg-red-50 transition-colors text-sm flex items-center justify-center gap-2`}
                             >
                               <Trash2 className="w-4 h-4" />
                               Cancel
@@ -446,7 +541,7 @@ const BorrowReturn = () => {
                           </div>
                         )}
 
-                        {activeTab === 'history' && (
+                        {activeTab === "history" && (
                           <button
                             onClick={() => navigate(`/book/${item.book_id}`)}
                             className="w-full py-2 rounded-lg bg-[#0770ad] text-white font-bold hover:bg-[#055a8c] transition-colors text-sm flex items-center justify-center gap-2"
@@ -462,11 +557,23 @@ const BorrowReturn = () => {
               </div>
             ) : (
               <EmptyState
-                icon={activeTab === 'loans' ? BookOpen : activeTab === 'reservations' ? Clock : ClipboardList}
-                title={`No ${activeTab === 'loans' ? 'Borrowed Books' : activeTab === 'reservations' ? 'Active Reservations' : historyFilter === 'borrowed' ? 'Borrowed Books' : historyFilter === 'returned' ? 'Returned Books' : 'History'}`}
-                desc={activeTab === 'loans' ? "You haven't borrowed any books yet." : activeTab === 'reservations' ? "You don't have any active reservations." : "No activity yet."}
+                icon={
+                  activeTab === "loans"
+                    ? BookOpen
+                    : activeTab === "reservations"
+                      ? Clock
+                      : ClipboardList
+                }
+                title={`No ${activeTab === "loans" ? "Borrowed Books" : activeTab === "reservations" ? "Active Reservations" : historyFilter === "borrowed" ? "Borrowed Books" : historyFilter === "returned" ? "Returned Books" : "History"}`}
+                desc={
+                  activeTab === "loans"
+                    ? "You haven't borrowed any books yet."
+                    : activeTab === "reservations"
+                      ? "You don't have any active reservations."
+                      : "No activity yet."
+                }
                 btnText="Browse Books"
-                onClick={() => navigate('/books')}
+                onClick={() => navigate("/books")}
               />
             )}
 
@@ -493,7 +600,6 @@ const BorrowReturn = () => {
                 </button>
               </div>
             )}
-
           </div>
         )}
       </div>

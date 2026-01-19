@@ -1,19 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, Loader2, Book, Filter, X, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
-import Navbar from '../components/Navbar';
-import BookCard from '../components/BookCard';
-import apiService from '../services/api';
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Search,
+  Loader2,
+  Book,
+  Filter,
+  X,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import Navbar from "../components/Navbar";
+import BookCard from "../components/BookCard";
+import apiService from "../services/api";
 
-import apiAxios from '../api/axios';
-import toast from 'react-hot-toast';
+import apiAxios from "../api/axios";
+import toast from "react-hot-toast";
 
 const AllBooks = () => {
   const [library, setLibrary] = useState([]);
   const [openLibrary, setOpenLibrary] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [query, setQuery] = useState('');
-  const [category, setCategory] = useState('');
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
@@ -26,15 +35,14 @@ const AllBooks = () => {
   const inputRef = useRef(null);
   const navigate = useNavigate();
 
-
   // Fetch initial books and categories
   useEffect(() => {
     (async () => {
       setLoading(true);
       try {
         const [cats, books] = await Promise.all([
-          apiAxios.get('/categories'),
-          apiService.getBooks()
+          apiAxios.get("/categories"),
+          apiService.getBooks(),
         ]);
         setCategories(cats.data || []);
         setLibrary(books || []);
@@ -43,7 +51,6 @@ const AllBooks = () => {
       }
     })();
   }, []);
-
 
   // Debounced search suggestions
   useEffect(() => {
@@ -60,14 +67,14 @@ const AllBooks = () => {
 
     debounce.current = setTimeout(async () => {
       try {
-        const res = await apiAxios.get('/books/suggest', {
-          params: { query: query.trim() }
+        const res = await apiAxios.get("/books/suggest", {
+          params: { query: query.trim() },
         });
         setSuggestions(res.data || []);
         setShowSuggestions(true);
         setSelectedIndex(-1);
       } catch (err) {
-        console.error('Suggestions error:', err);
+        console.error("Suggestions error:", err);
         setSuggestions([]);
       } finally {
         setLoadingSuggestions(false);
@@ -79,7 +86,6 @@ const AllBooks = () => {
     };
   }, [query]);
 
-
   useEffect(() => {
     const handleClick = (e) => {
       if (inputRef.current && !inputRef.current.contains(e.target)) {
@@ -87,29 +93,28 @@ const AllBooks = () => {
         setSelectedIndex(-1);
       }
     };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
   }, []);
-
 
   const handleKeyDown = (e) => {
     if (!showSuggestions || suggestions.length === 0) {
-      if (e.key === 'Enter') handleSearch(e);
+      if (e.key === "Enter") handleSearch(e);
       return;
     }
 
     switch (e.key) {
-      case 'ArrowDown':
+      case "ArrowDown":
         e.preventDefault();
-        setSelectedIndex(prev =>
-          prev < suggestions.length - 1 ? prev + 1 : prev
+        setSelectedIndex((prev) =>
+          prev < suggestions.length - 1 ? prev + 1 : prev,
         );
         break;
-      case 'ArrowUp':
+      case "ArrowUp":
         e.preventDefault();
-        setSelectedIndex(prev => prev > 0 ? prev - 1 : -1);
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
         break;
-      case 'Enter':
+      case "Enter":
         e.preventDefault();
         if (selectedIndex >= 0) {
           handleBookClick(suggestions[selectedIndex]);
@@ -117,7 +122,7 @@ const AllBooks = () => {
           handleSearch(e);
         }
         break;
-      case 'Escape':
+      case "Escape":
         setShowSuggestions(false);
         setSelectedIndex(-1);
         break;
@@ -125,7 +130,6 @@ const AllBooks = () => {
         break;
     }
   };
-
 
   // Handle search submission
   const handleSearch = async (e) => {
@@ -138,12 +142,12 @@ const AllBooks = () => {
     setSearchPage(1);
 
     try {
-      const res = await apiAxios.get('/books/search', {
-        params: { query: query.trim() }
+      const res = await apiAxios.get("/books/search", {
+        params: { query: query.trim() },
       });
       setOpenLibrary(res.data || []);
     } catch (err) {
-      console.error('Search error:', err);
+      console.error("Search error:", err);
       setOpenLibrary([]);
       toast.error("Failed to search books. Please try again.");
     } finally {
@@ -151,11 +155,10 @@ const AllBooks = () => {
     }
   };
 
-
   // Navigate to book details
   const handleBookClick = (book) => {
     const targetId = book.book_id || book.id || book.google_id;
-    setQuery('');
+    setQuery("");
     setSuggestions([]);
     setShowSuggestions(false);
     setSelectedIndex(-1);
@@ -169,7 +172,7 @@ const AllBooks = () => {
       const data = await apiService.getBooks();
       setLibrary(data);
       setOpenLibrary([]);
-      setQuery('');
+      setQuery("");
       setSearchPage(1);
       setCollectionPage(1);
     } finally {
@@ -178,7 +181,7 @@ const AllBooks = () => {
   };
 
   const handleClear = () => {
-    setQuery('');
+    setQuery("");
     setOpenLibrary([]);
     setSuggestions([]);
     setShowSuggestions(false);
@@ -186,20 +189,30 @@ const AllBooks = () => {
     setSearchPage(1);
   };
 
-
   useEffect(() => {
     setCollectionPage(1);
   }, [category, library]);
 
-
-  const allCats = ["All", ...new Set(library.map(b => b.category).filter(Boolean).sort())];
-  const filtered = !category || category === 'All'
-    ? library
-    : library.filter(b => {
-      const catObj = categories.find(c => String(c.category_id) === String(category));
-      return b.category === catObj?.name || b.category_name === catObj?.name;
-    });
-
+  const allCats = [
+    "All",
+    ...new Set(
+      library
+        .map((b) => b.category)
+        .filter(Boolean)
+        .sort(),
+    ),
+  ];
+  const filtered =
+    !category || category === "All"
+      ? library
+      : library.filter((b) => {
+          const catObj = categories.find(
+            (c) => String(c.category_id) === String(category),
+          );
+          return (
+            b.category === catObj?.name || b.category_name === catObj?.name
+          );
+        });
 
   const OpenLibraryCard = ({ book }) => (
     <div
@@ -208,11 +221,16 @@ const AllBooks = () => {
     >
       <div className="h-56 bg-gray-50 rounded-xl mb-4 overflow-hidden relative flex items-center justify-center">
         <img
-          src={book.cover_image || "https://via.placeholder.com/150x220?text=No+Cover"}
+          src={
+            book.cover_image ||
+            "https://via.placeholder.com/150x220?text=No+Cover"
+          }
           alt={book.title}
           className="h-full object-contain group-hover:scale-105 transition-transform"
           loading="lazy"
-          onError={(e) => e.target.src = "https://via.placeholder.com/150x220?text=No+Cover"}
+          onError={(e) =>
+            (e.target.src = "https://via.placeholder.com/150x220?text=No+Cover")
+          }
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all flex items-center justify-center">
           <span className="bg-white text-[#0770ad] px-4 py-2 rounded-full font-bold text-sm opacity-0 group-hover:opacity-100 transition-all transform group-hover:scale-110 shadow-lg">
@@ -224,22 +242,21 @@ const AllBooks = () => {
         {book.title}
       </h3>
       <p className="text-sm text-gray-500 mb-3 line-clamp-1">
-        {book.author || 'Unknown'}
+        {book.author || "Unknown"}
       </p>
       <div className="mt-auto">
         <span className="text-[10px] font-bold uppercase bg-blue-50 text-[#0770ad] px-2 py-1 rounded-md border border-blue-100">
-          {book.published_year || 'N/A'}
+          {book.published_year || "N/A"}
         </span>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-16">
+    <div className="min-h-screen bg-gray-50 pt-8 pb-16">
       <Navbar />
       <div className="container mx-auto px-6 lg:px-16">
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-12">
-
           <div className="flex justify-between items-center mb-8 gap-4 border-b border-gray-100 pb-6">
             <div>
               <h1 className="text-3xl font-bold mb-2">Library</h1>
@@ -306,21 +323,28 @@ const AllBooks = () => {
                         <button
                           key={book.id || book.google_id}
                           onClick={() => handleBookClick(book)}
-                          className={`w-full px-4 py-3 hover:bg-blue-50 flex items-center gap-3 text-left transition-colors border-b border-gray-50 last:border-0 ${index === selectedIndex ? 'bg-blue-50' : ''
-                            }`}
+                          className={`w-full px-4 py-3 hover:bg-blue-50 flex items-center gap-3 text-left transition-colors border-b border-gray-50 last:border-0 ${
+                            index === selectedIndex ? "bg-blue-50" : ""
+                          }`}
                         >
                           <img
-                            src={book.cover_image || "https://via.placeholder.com/50x75?text=No+Cover"}
+                            src={
+                              book.cover_image ||
+                              "https://via.placeholder.com/50x75?text=No+Cover"
+                            }
                             alt=""
                             className="w-10 h-14 object-cover rounded bg-gray-200 shadow-sm flex-shrink-0"
-                            onError={(e) => e.target.src = "https://via.placeholder.com/50x75?text=No+Cover"}
+                            onError={(e) =>
+                              (e.target.src =
+                                "https://via.placeholder.com/50x75?text=No+Cover")
+                            }
                           />
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-sm truncate text-gray-800">
                               {book.title}
                             </p>
                             <p className="text-xs text-gray-500 truncate">
-                              by {book.author || 'Unknown'}
+                              by {book.author || "Unknown"}
                             </p>
                           </div>
                           <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -357,7 +381,7 @@ const AllBooks = () => {
                 className="w-full pl-12 pr-8 py-4 bg-blue-50 text-[#0770ad] font-bold rounded-xl cursor-pointer appearance-none focus:outline-none focus:ring-2 focus:ring-[#0770ad]"
               >
                 <option value="">All Categories</option>
-                {categories.map(cat => (
+                {categories.map((cat) => (
                   <option key={cat.category_id} value={cat.category_id}>
                     {cat.name}
                   </option>
@@ -381,15 +405,22 @@ const AllBooks = () => {
                 </button>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {openLibrary.slice((searchPage - 1) * 16, searchPage * 16).map(book => (
-                  <OpenLibraryCard key={book.google_id || book.id} book={book} />
-                ))}
+                {openLibrary
+                  .slice((searchPage - 1) * 16, searchPage * 16)
+                  .map((book) => (
+                    <OpenLibraryCard
+                      key={book.google_id || book.id}
+                      book={book}
+                    />
+                  ))}
               </div>
 
               {Math.ceil(openLibrary.length / 16) > 1 && (
                 <div className="flex justify-center items-center gap-2 mt-8">
                   <button
-                    onClick={() => setSearchPage(prev => Math.max(prev - 1, 1))}
+                    onClick={() =>
+                      setSearchPage((prev) => Math.max(prev - 1, 1))
+                    }
                     disabled={searchPage === 1}
                     className="p-3 rounded-xl border border-gray-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition bg-white shadow-sm"
                   >
@@ -399,7 +430,11 @@ const AllBooks = () => {
                     Page {searchPage} of {Math.ceil(openLibrary.length / 16)}
                   </span>
                   <button
-                    onClick={() => setSearchPage(prev => Math.min(prev + 1, Math.ceil(openLibrary.length / 16)))}
+                    onClick={() =>
+                      setSearchPage((prev) =>
+                        Math.min(prev + 1, Math.ceil(openLibrary.length / 16)),
+                      )
+                    }
                     disabled={searchPage === Math.ceil(openLibrary.length / 16)}
                     className="p-3 rounded-xl border border-gray-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition bg-white shadow-sm"
                   >
@@ -418,18 +453,22 @@ const AllBooks = () => {
 
             {library.length > 0 && (
               <div className="mb-6 flex overflow-x-auto pb-2 gap-2 no-scrollbar">
-                {allCats.map(cat => (
+                {allCats.map((cat) => (
                   <button
                     key={cat}
                     onClick={() => {
-                      const c = categories.find(c => c.name === cat);
+                      const c = categories.find((c) => c.name === cat);
                       setCategory(cat === "All" ? "" : c?.category_id || "");
                     }}
-                    className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all ${((cat === "All" && !category) ||
-                      (category && categories.find(c => String(c.category_id) === String(category))?.name === cat))
-                      ? "bg-[#0770ad] text-white shadow-md"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
+                    className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all ${
+                      (cat === "All" && !category) ||
+                      (category &&
+                        categories.find(
+                          (c) => String(c.category_id) === String(category),
+                        )?.name === cat)
+                        ? "bg-[#0770ad] text-white shadow-md"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
                   >
                     {cat}
                   </button>
@@ -445,18 +484,23 @@ const AllBooks = () => {
             ) : filtered.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {filtered.slice((collectionPage - 1) * 16, collectionPage * 16).map(book => (
-                    <div key={book.id || book.book_id} onClick={() => handleBookClick(book)}>
-                      <BookCard book={book} />
-                    </div>
-                  ))}
+                  {filtered
+                    .slice((collectionPage - 1) * 16, collectionPage * 16)
+                    .map((book) => (
+                      <div
+                        key={book.id || book.book_id}
+                        onClick={() => handleBookClick(book)}
+                      >
+                        <BookCard book={book} />
+                      </div>
+                    ))}
                 </div>
 
                 {Math.ceil(filtered.length / 16) > 1 && (
                   <div className="flex justify-center items-center gap-2 mt-12 mb-8">
                     <button
                       onClick={() => {
-                        setCollectionPage(prev => Math.max(prev - 1, 1));
+                        setCollectionPage((prev) => Math.max(prev - 1, 1));
                         window.scrollTo({ top: 300, behavior: "smooth" });
                       }}
                       disabled={collectionPage === 1}
@@ -469,10 +513,14 @@ const AllBooks = () => {
                     </span>
                     <button
                       onClick={() => {
-                        setCollectionPage(prev => Math.min(prev + 1, Math.ceil(filtered.length / 16)));
+                        setCollectionPage((prev) =>
+                          Math.min(prev + 1, Math.ceil(filtered.length / 16)),
+                        );
                         window.scrollTo({ top: 300, behavior: "smooth" });
                       }}
-                      disabled={collectionPage === Math.ceil(filtered.length / 16)}
+                      disabled={
+                        collectionPage === Math.ceil(filtered.length / 16)
+                      }
                       className="p-3 rounded-xl border border-gray-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition bg-white shadow-sm"
                     >
                       <ChevronRight className="w-5 h-5 text-gray-600" />
@@ -483,12 +531,15 @@ const AllBooks = () => {
             ) : (
               <div className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
                 <Book className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <h3 className="text-lg font-bold text-gray-600">No books found</h3>
-                <p className="text-sm text-gray-400 mt-2">Try adjusting your filters</p>
+                <h3 className="text-lg font-bold text-gray-600">
+                  No books found
+                </h3>
+                <p className="text-sm text-gray-400 mt-2">
+                  Try adjusting your filters
+                </p>
               </div>
             )}
           </div>
-
         </div>
       </div>
     </div>

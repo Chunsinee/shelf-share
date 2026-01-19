@@ -229,7 +229,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-900 pt-24 pb-12">
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-900 pt-8 pb-12">
       <Toaster position="top-center" reverseOrder={false} />
 
       <div className="container mx-auto py-8 md:py-10 flex flex-col md:flex-row gap-8 md:gap-12 px-6 lg:px-16">

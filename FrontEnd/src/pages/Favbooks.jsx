@@ -1,6 +1,5 @@
-
-import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from "react";
+import { Link } from "react-router-dom";
 import {
   Heart,
   Search,
@@ -10,31 +9,30 @@ import {
   Grid,
   List,
   Download,
-  Share2
-} from 'lucide-react';
-import Swal from 'sweetalert2';
-import Navbar from '../components/Navbar';
-import BookCard from '../components/BookCard';
-import apiService from '../services/api'; 
+  Share2,
+} from "lucide-react";
+import Swal from "sweetalert2";
+import Navbar from "../components/Navbar";
+import BookCard from "../components/BookCard";
+import apiService from "../services/api";
 
 const Favbooks = () => {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('date-desc');
-  const [viewMode, setViewMode] = useState('grid');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("date-desc");
+  const [viewMode, setViewMode] = useState("grid");
   const [selectedBooks, setSelectedBooks] = useState(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
 
-  
   const loadFavorites = async () => {
     setLoading(true);
     try {
       const data = await apiService.getMyFavorites();
       setFavorites(data || []);
     } catch (err) {
-      console.error('Failed to load favorites:', err);
+      console.error("Failed to load favorites:", err);
       setFavorites([]);
     } finally {
       setLoading(false);
@@ -43,49 +41,56 @@ const Favbooks = () => {
 
   useEffect(() => {
     loadFavorites();
-    
-    window.addEventListener('favoritesUpdated', loadFavorites);
-    return () => window.removeEventListener('favoritesUpdated', loadFavorites);
+
+    window.addEventListener("favoritesUpdated", loadFavorites);
+    return () => window.removeEventListener("favoritesUpdated", loadFavorites);
   }, []);
 
   const categories = useMemo(() => {
     return [
-      'all',
-      ...new Set(favorites.map(book => book.category || book.category_name).filter(Boolean).sort())
+      "all",
+      ...new Set(
+        favorites
+          .map((book) => book.category || book.category_name)
+          .filter(Boolean)
+          .sort(),
+      ),
     ];
   }, [favorites]);
 
   const filteredAndSortedBooks = useMemo(() => {
     let result = [...favorites];
 
-    if (selectedCategory !== 'all') {
-      result = result.filter(book => (book.category || book.category_name) === selectedCategory);
+    if (selectedCategory !== "all") {
+      result = result.filter(
+        (book) => (book.category || book.category_name) === selectedCategory,
+      );
     }
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(book =>
-        book.title?.toLowerCase().includes(query) ||
-        book.author?.toLowerCase().includes(query)
+      result = result.filter(
+        (book) =>
+          book.title?.toLowerCase().includes(query) ||
+          book.author?.toLowerCase().includes(query),
       );
     }
 
     result.sort((a, b) => {
-      
       const dateA = new Date(a.favorited_at || a.created_at || 0).getTime();
       const dateB = new Date(b.favorited_at || b.created_at || 0).getTime();
 
       switch (sortBy) {
-        case 'date-desc':
+        case "date-desc":
           return dateB - dateA;
-        case 'date-asc':
+        case "date-asc":
           return dateA - dateB;
-        case 'title-asc':
-          return (a.title || '').localeCompare(b.title || '');
-        case 'title-desc':
-          return (b.title || '').localeCompare(a.title || '');
-        case 'author':
-          return (a.author || '').localeCompare(b.author || '');
+        case "title-asc":
+          return (a.title || "").localeCompare(b.title || "");
+        case "title-desc":
+          return (b.title || "").localeCompare(a.title || "");
+        case "author":
+          return (a.author || "").localeCompare(b.author || "");
         default:
           return 0;
       }
@@ -110,188 +115,203 @@ const Favbooks = () => {
       setSelectedBooks(new Set());
       setShowBulkActions(false);
     } else {
-      const allIds = new Set(filteredAndSortedBooks.map(book => book.id || book.book_id));
+      const allIds = new Set(
+        filteredAndSortedBooks.map((book) => book.id || book.book_id),
+      );
       setSelectedBooks(allIds);
       setShowBulkActions(true);
     }
   };
 
-  
   const handleRemoveSelected = async () => {
     const result = await Swal.fire({
-      title: 'Remove from Favorites?',
-      html: `Are you sure you want to remove <strong>${selectedBooks.size}</strong> book${selectedBooks.size > 1 ? 's' : ''} from your favorites?`,
-      icon: 'warning',
+      title: "Remove from Favorites?",
+      html: `Are you sure you want to remove <strong>${selectedBooks.size}</strong> book${selectedBooks.size > 1 ? "s" : ""} from your favorites?`,
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, remove them',
-      cancelButtonText: 'Cancel',
-      reverseButtons: true
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, remove them",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
     });
 
     if (result.isConfirmed) {
       try {
         const idsToRemove = Array.from(selectedBooks);
-        
-        await Promise.all(idsToRemove.map(id => apiService.removeFavorite(id)));
 
-        
+        await Promise.all(
+          idsToRemove.map((id) => apiService.removeFavorite(id)),
+        );
+
         loadFavorites();
         setSelectedBooks(new Set());
         setShowBulkActions(false);
 
-        window.dispatchEvent(new Event('favoritesUpdated'));
+        window.dispatchEvent(new Event("favoritesUpdated"));
 
         Swal.fire({
-          title: 'Removed!',
-          text: `${selectedBooks.size} book${selectedBooks.size > 1 ? 's' : ''} removed successfully.`,
-          icon: 'success',
+          title: "Removed!",
+          text: `${selectedBooks.size} book${selectedBooks.size > 1 ? "s" : ""} removed successfully.`,
+          icon: "success",
           timer: 2000,
-          showConfirmButton: false
+          showConfirmButton: false,
         });
       } catch (err) {
         console.error("Remove failed:", err);
-        Swal.fire('Error', 'Failed to remove selected books', 'error');
+        Swal.fire("Error", "Failed to remove selected books", "error");
       }
     }
   };
 
-  
   const handleClearAll = async () => {
     const result = await Swal.fire({
-      title: 'Clear All Favorites?',
+      title: "Clear All Favorites?",
       html: `This will remove <strong>all ${favorites.length} books</strong> from your favorites.<br><span style="color: #ef4444;">This action cannot be undone!</span>`,
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, clear all',
-      cancelButtonText: 'Cancel',
-      reverseButtons: true
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, clear all",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
     });
 
     if (result.isConfirmed) {
       try {
         setLoading(true);
-        
-        
-        const allIds = favorites.map(b => b.book_id || b.id || b.google_id);
-        await Promise.all(allIds.map(id => apiService.removeFavorite(id)));
+
+        const allIds = favorites.map((b) => b.book_id || b.id || b.google_id);
+        await Promise.all(allIds.map((id) => apiService.removeFavorite(id)));
 
         setFavorites([]);
         setSelectedBooks(new Set());
         setShowBulkActions(false);
-        window.dispatchEvent(new Event('favoritesUpdated'));
+        window.dispatchEvent(new Event("favoritesUpdated"));
 
         Swal.fire({
-          title: 'Cleared!',
-          text: 'All favorites have been removed.',
-          icon: 'success',
+          title: "Cleared!",
+          text: "All favorites have been removed.",
+          icon: "success",
           timer: 2000,
-          showConfirmButton: false
+          showConfirmButton: false,
         });
       } catch (err) {
         console.error("Clear all failed:", err);
-        Swal.fire('Error', 'Failed to clear favorites', 'error');
+        Swal.fire("Error", "Failed to clear favorites", "error");
       } finally {
         setLoading(false);
       }
     }
   };
 
-  
   const handleExport = () => {
-    const exportData = filteredAndSortedBooks.map(book => ({
+    const exportData = filteredAndSortedBooks.map((book) => ({
       title: book.title,
       author: book.author,
       category: book.category || book.category_name,
-      addedAt: new Date(book.favorited_at || book.created_at || Date.now()).toLocaleDateString()
+      addedAt: new Date(
+        book.favorited_at || book.created_at || Date.now(),
+      ).toLocaleDateString(),
     }));
 
     const csv = [
-      'Title,Author,Category,Added Date',
-      ...exportData.map(b => `"${b.title}","${b.author}","${b.category}","${b.addedAt}"`)
-    ].join('\n');
+      "Title,Author,Category,Added Date",
+      ...exportData.map(
+        (b) => `"${b.title}","${b.author}","${b.category}","${b.addedAt}"`,
+      ),
+    ].join("\n");
 
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `favorites-${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
 
     Swal.fire({
-      title: 'Exported!',
-      text: 'Your favorites list has been downloaded.',
-      icon: 'success',
+      title: "Exported!",
+      text: "Your favorites list has been downloaded.",
+      icon: "success",
       timer: 2000,
-      showConfirmButton: false
+      showConfirmButton: false,
     });
   };
 
-  
   const handleShare = async () => {
-    const shareText = `My Favorite Books (${favorites.length}):\n${favorites.slice(0, 5).map(b => `• ${b.title} by ${b.author}`).join('\n')
-      }${favorites.length > 5 ? '\n...' : ''}`;
+    const shareText = `My Favorite Books (${favorites.length}):\n${favorites
+      .slice(0, 5)
+      .map((b) => `• ${b.title} by ${b.author}`)
+      .join("\n")}${favorites.length > 5 ? "\n..." : ""}`;
 
     try {
       if (navigator.share) {
         await navigator.share({
-          title: 'My Favorite Books',
-          text: shareText
+          title: "My Favorite Books",
+          text: shareText,
         });
       } else {
         await navigator.clipboard.writeText(shareText);
         Swal.fire({
-          title: 'Copied!',
-          text: 'Favorites list copied to clipboard.',
-          icon: 'success',
+          title: "Copied!",
+          text: "Favorites list copied to clipboard.",
+          icon: "success",
           timer: 2000,
-          showConfirmButton: false
+          showConfirmButton: false,
         });
       }
     } catch (err) {
-      if (err.name !== 'AbortError') {
+      if (err.name !== "AbortError") {
         Swal.fire({
-          title: 'Error',
-          text: 'Failed to share favorites.',
-          icon: 'error',
-          confirmButtonColor: '#0770ad'
+          title: "Error",
+          text: "Failed to share favorites.",
+          icon: "error",
+          confirmButtonColor: "#0770ad",
         });
       }
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+    <div className="min-h-screen bg-gray-50 pt-12 pb-12">
       <Navbar />
       <div className="container mx-auto px-6 lg:px-16">
-
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
               <Heart className="w-8 h-8 text-red-500 fill-red-500" />
               My Favorites
             </h1>
             <p className="text-gray-500">
               {favorites.length === 0
-                ? 'No favorites yet'
-                : `${favorites.length} book${favorites.length === 1 ? '' : 's'} in your collection`}
+                ? "No favorites yet"
+                : `${favorites.length} book${favorites.length === 1 ? "" : "s"} in your collection`}
             </p>
           </div>
 
           {favorites.length > 0 && (
             <div className="flex gap-3">
-              <button onClick={handleExport} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition">
-                <Download className="w-4 h-4" /><span className="hidden sm:inline">Export</span>
+              <button
+                onClick={handleExport}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition"
+              >
+                <Download className="w-4 h-4" />
+                <span className="hidden sm:inline">Export</span>
               </button>
-              <button onClick={handleShare} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition">
-                <Share2 className="w-4 h-4" /><span className="hidden sm:inline">Share</span>
+              <button
+                onClick={handleShare}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition"
+              >
+                <Share2 className="w-4 h-4" />
+                <span className="hidden sm:inline">Share</span>
               </button>
-              <button onClick={handleClearAll} className="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 text-red-600 rounded-xl font-medium hover:bg-red-100 transition">
-                <Trash2 className="w-4 h-4" /><span className="hidden sm:inline">Clear All</span>
+              <button
+                onClick={handleClearAll}
+                className="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 text-red-600 rounded-xl font-medium hover:bg-red-100 transition"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span className="hidden sm:inline">Clear All</span>
               </button>
             </div>
           )}
@@ -300,7 +320,9 @@ const Favbooks = () => {
         {loading && (
           <div className="text-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#0770ad] border-t-transparent mx-auto mb-4"></div>
-            <p className="text-gray-400 font-medium animate-pulse">Loading favorites...</p>
+            <p className="text-gray-400 font-medium animate-pulse">
+              Loading favorites...
+            </p>
           </div>
         )}
 
@@ -309,9 +331,16 @@ const Favbooks = () => {
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Heart className="w-10 h-10 text-red-500" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No Favorites Yet</h3>
-            <p className="text-gray-500 mb-6">Start adding books to your favorites by clicking the heart icon.</p>
-            <Link to="/books" className="inline-block bg-[#0770ad] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#055a8c] transition">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              No Favorites Yet
+            </h3>
+            <p className="text-gray-500 mb-6">
+              Start adding books to your favorites by clicking the heart icon.
+            </p>
+            <Link
+              to="/books"
+              className="inline-block bg-[#0770ad] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#055a8c] transition"
+            >
               Browse Books
             </Link>
           </div>
@@ -331,31 +360,62 @@ const Favbooks = () => {
                 />
               </div>
               <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
-                <button onClick={() => setViewMode('grid')} className={`px-4 py-2 rounded-lg transition ${viewMode === 'grid' ? 'bg-white text-[#0770ad] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}><Grid className="w-5 h-5" /></button>
-                <button onClick={() => setViewMode('list')} className={`px-4 py-2 rounded-lg transition ${viewMode === 'list' ? 'bg-white text-[#0770ad] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}><List className="w-5 h-5" /></button>
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`px-4 py-2 rounded-lg transition ${viewMode === "grid" ? "bg-white text-[#0770ad] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                >
+                  <Grid className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`px-4 py-2 rounded-lg transition ${viewMode === "list" ? "bg-white text-[#0770ad] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                >
+                  <List className="w-5 h-5" />
+                </button>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
               <div className="relative flex-1">
                 <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0770ad] w-5 h-5" />
-                <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="w-full sm:w-auto pl-12 pr-8 py-2.5 bg-blue-50 text-[#0770ad] font-bold rounded-xl outline-none cursor-pointer appearance-none">
-                  {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat === 'all' ? 'All Categories' : cat} ({cat === 'all' ? favorites.length : favorites.filter(b => (b.category || b.category_name) === cat).length})</option>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full sm:w-auto pl-12 pr-8 py-2.5 bg-blue-50 text-[#0770ad] font-bold rounded-xl outline-none cursor-pointer appearance-none"
+                >
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat === "all" ? "All Categories" : cat} (
+                      {cat === "all"
+                        ? favorites.length
+                        : favorites.filter(
+                            (b) => (b.category || b.category_name) === cat,
+                          ).length}
+                      )
+                    </option>
                   ))}
                 </select>
               </div>
               <div className="relative flex-1">
                 <SortAsc className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
-                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="w-full sm:w-auto pl-12 pr-8 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl outline-none cursor-pointer appearance-none">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full sm:w-auto pl-12 pr-8 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl outline-none cursor-pointer appearance-none"
+                >
                   <option value="date-desc">Newest First</option>
                   <option value="date-asc">Oldest First</option>
                   <option value="title-asc">Title (A-Z)</option>
                   <option value="title-desc">Title (Z-A)</option>
                 </select>
               </div>
-              <button onClick={handleSelectAll} className="px-4 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition whitespace-nowrap">
-                {selectedBooks.size === filteredAndSortedBooks.length ? 'Deselect All' : 'Select All'}
+              <button
+                onClick={handleSelectAll}
+                className="px-4 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition whitespace-nowrap"
+              >
+                {selectedBooks.size === filteredAndSortedBooks.length
+                  ? "Deselect All"
+                  : "Select All"}
               </button>
             </div>
           </div>
@@ -365,20 +425,44 @@ const Favbooks = () => {
           <div className="bg-[#0770ad] text-white rounded-2xl p-4 mb-6 flex items-center justify-between shadow-lg animate-in slide-in-from-top-2">
             <span className="font-bold">{selectedBooks.size} selected</span>
             <div className="flex gap-3">
-              <button onClick={() => { setSelectedBooks(new Set()); setShowBulkActions(false); }} className="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition">Cancel</button>
-              <button onClick={handleRemoveSelected} className="px-4 py-2 bg-red-500 rounded-lg hover:bg-red-600 transition flex items-center gap-2"><Trash2 className="w-4 h-4" /> Remove Selected</button>
+              <button
+                onClick={() => {
+                  setSelectedBooks(new Set());
+                  setShowBulkActions(false);
+                }}
+                className="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRemoveSelected}
+                className="px-4 py-2 bg-red-500 rounded-lg hover:bg-red-600 transition flex items-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" /> Remove Selected
+              </button>
             </div>
           </div>
         )}
 
         {!loading && filteredAndSortedBooks.length > 0 && (
-          <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8' : 'space-y-4'}>
-            {filteredAndSortedBooks.map(book => {
+          <div
+            className={
+              viewMode === "grid"
+                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8"
+                : "space-y-4"
+            }
+          >
+            {filteredAndSortedBooks.map((book) => {
               const bookId = book.id || book.book_id;
               return (
                 <div key={bookId} className="relative group">
                   <div className="absolute top-4 left-4 z-10">
-                    <input type="checkbox" checked={selectedBooks.has(bookId)} onChange={() => handleSelectBook(bookId)} className="w-5 h-5 rounded border-2 border-gray-300 text-[#0770ad] focus:ring-2 focus:ring-[#0770ad] cursor-pointer" />
+                    <input
+                      type="checkbox"
+                      checked={selectedBooks.has(bookId)}
+                      onChange={() => handleSelectBook(bookId)}
+                      className="w-5 h-5 rounded border-2 border-gray-300 text-[#0770ad] focus:ring-2 focus:ring-[#0770ad] cursor-pointer"
+                    />
                   </div>
                   <BookCard book={book} />
                 </div>
