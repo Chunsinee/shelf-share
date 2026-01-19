@@ -390,6 +390,8 @@ exports.subscribeNewsletter = async (req, res) => {
 
   } catch (err) {
     console.error('Newsletter subscription error:', err);
-    res.status(500).json({ message: `Failed to subscribe: ${err.message}` });
+    res.status(500).json({ 
+      message: `Failed to subscribe. Note: Resend Dev Mode only allows sending to your registered email. (${err.message})` 
+    });
   }
 };

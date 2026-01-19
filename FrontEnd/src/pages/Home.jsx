@@ -1,11 +1,37 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Search, Book, Loader2, TrendingUp, Award, Sparkles, RefreshCw, X, Zap, Calendar, ChevronLeft, ChevronRight, Filter } from "lucide-react";
+import {
+  Search,
+  Book,
+  Loader2,
+  TrendingUp,
+  Award,
+  Sparkles,
+  RefreshCw,
+  X,
+  Zap,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+} from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import BookCard from "../components/BookCard";
 import api from "../services/api";
 import Navbar from "../components/Navbar";
+import { useBookSections } from "../hooks/useBookSections";
 
-const fixedCategories = ["Fiction", "Non-Fiction", "Technology", "Science", "History", "Business", "Art & Design", "Biography", "Health & Wellness", "Travel"];
+const fixedCategories = [
+  "Fiction",
+  "Non-Fiction",
+  "Technology",
+  "Science",
+  "History",
+  "Business",
+  "Art & Design",
+  "Biography",
+  "Health & Wellness",
+  "Travel",
+];
 
 const recommendations = [
   { id: "artist", label: "Artist of the Month", icon: Award },
@@ -18,8 +44,18 @@ const recommendations = [
 const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Use custom hook for initial data fetching
+  const {
+    books: initialFetchedBooks,
+    loading: initialLoading,
+    isFilling,
+  } = useBookSections(fixedCategories);
+
+  // Local state for UI filtering
   const [books, setBooks] = useState([]);
   const [initialBooks, setInitialBooks] = useState([]);
+
   const [selectedCategory, setSelectedCategory] = useState("All Genres");
   const [selectedFilterType, setSelectedFilterType] = useState("category");
   const [loading, setLoading] = useState(true);
@@ -27,88 +63,19 @@ const Home = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedTopGenreCategory, setSelectedTopGenreCategory] = useState("All");
+  const [selectedTopGenreCategory, setSelectedTopGenreCategory] =
+    useState("All");
   const itemsPerPage = 24;
 
-  const BOOKS_PER_CATEGORY = 10;
   const TOP_GENRE_LIMIT = 5;
 
+  // Sync hook data to local state
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const categorySearchTerms = {
-          "Fiction": "fiction novel story",
-          "Non-Fiction": "nonfiction biography memoir",
-          "Technology": "programming computer software",
-          "Science": "science physics biology",
-          "History": "history historical war",
-          "Business": "business management marketing",
-          "Art & Design": "art design painting",
-          "Biography": "biography autobiography life",
-          "Health & Wellness": "health wellness fitness nutrition",
-          "Travel": "travel guide tourism adventure"
-        };
+    setBooks(initialFetchedBooks);
+    setInitialBooks(initialFetchedBooks);
+    setLoading(initialLoading);
+  }, [initialFetchedBooks, initialLoading]);
 
-        const dbBooks = await api.getBooks();
-        console.log(`📚 Loaded ${dbBooks.length} books from database`);
-
-        const categoryBooks = {};
-        fixedCategories.forEach(cat => {
-          categoryBooks[cat] = dbBooks
-            .filter(b => (b.category || b.category_name || "").toLowerCase().includes(cat.toLowerCase()))
-            .slice(0, BOOKS_PER_CATEGORY);
-        });
-
-        
-        await Promise.all(fixedCategories.map(async (category) => {
-          const currentCount = categoryBooks[category].length;
-
-          if (currentCount < BOOKS_PER_CATEGORY) {
-            const needed = BOOKS_PER_CATEGORY - currentCount;
-            const searchTerm = categorySearchTerms[category];
-
-            
-
-            try {
-              const searchResults = await api.getBooks(searchTerm);
-
-              const uniqueBooks = searchResults
-                .filter(nb => !categoryBooks[category].some(existing =>
-                  existing.title.toLowerCase().trim() === nb.title.toLowerCase().trim() &&
-                  existing.author.toLowerCase().trim() === nb.author.toLowerCase().trim()
-                ))
-                .slice(0, needed)
-                .map(book => ({
-                  ...book,
-                  category: category,
-                  category_name: category
-                }));
-
-              categoryBooks[category] = [...categoryBooks[category], ...uniqueBooks];
-              
-
-            } catch (err) {
-              console.error(`❌ Failed to fetch ${category}:`, err);
-            }
-          }
-        }));
-
-        const allBooks = Object.values(categoryBooks).flat();
-        setBooks(allBooks);
-        setInitialBooks(allBooks);
-
-        console.log(`✅ Total: ${allBooks.length} books loaded`);
-
-      } catch (err) {
-        console.error("❌ Failed to load books:", err);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
-
-  
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const filter = params.get("filter");
@@ -117,7 +84,7 @@ const Home = () => {
       if (fixedCategories.includes(filter)) {
         setSelectedCategory(filter);
         setSelectedFilterType("category");
-      } else if (recommendations.some(r => r.id === filter)) {
+      } else if (recommendations.some((r) => r.id === filter)) {
         setSelectedCategory(filter);
         setSelectedFilterType("recommendation");
       }
@@ -125,11 +92,10 @@ const Home = () => {
       setSearchQuery("");
       setBooks(initialBooks.length > 0 ? initialBooks : books);
 
-      
       setTimeout(() => {
-        const mainContent = document.getElementById('main-content');
+        const mainContent = document.getElementById("main-content");
         if (mainContent) {
-          mainContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          mainContent.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       }, 300);
     }
@@ -138,14 +104,21 @@ const Home = () => {
   useEffect(() => {
     setCurrentPage(1);
     setShowMobileFilters(false);
-  }, [selectedCategory, selectedFilterType, searchQuery, selectedTopGenreCategory]);
+  }, [
+    selectedCategory,
+    selectedFilterType,
+    searchQuery,
+    selectedTopGenreCategory,
+  ]);
 
   const categoryCounts = useMemo(() => {
     const sourceBooks = isSearching ? initialBooks : books;
     const counts = { "All Genres": sourceBooks.length };
-    fixedCategories.forEach(cat => {
-      counts[cat] = sourceBooks.filter(b =>
-        (b.category || b.category_name || "").toLowerCase().includes(cat.toLowerCase())
+    fixedCategories.forEach((cat) => {
+      counts[cat] = sourceBooks.filter((b) =>
+        (b.category || b.category_name || "")
+          .toLowerCase()
+          .includes(cat.toLowerCase()),
       ).length;
     });
     return counts;
@@ -155,32 +128,33 @@ const Home = () => {
     const sourceBooks = initialBooks.length > 0 ? initialBooks : books;
     const stats = {};
 
-    
-    fixedCategories.forEach(cat => {
+    fixedCategories.forEach((cat) => {
       stats[cat] = { books: [], totalBorrows: 0, totalRating: 0, count: 0 };
     });
 
-    
-    sourceBooks.forEach(book => {
+    sourceBooks.forEach((book) => {
       const bookCat = (book.category || book.category_name || "").toLowerCase();
-      
+
       for (const cat of fixedCategories) {
         if (bookCat.includes(cat.toLowerCase())) {
           stats[cat].books.push(book);
-          stats[cat].totalBorrows += (parseInt(book.borrow_count) || 0);
-          stats[cat].totalRating += (parseFloat(book.avg_rating) || 0);
+          stats[cat].totalBorrows += parseInt(book.borrow_count) || 0;
+          stats[cat].totalRating += parseFloat(book.avg_rating) || 0;
           stats[cat].count += 1;
-          break; 
+          break;
         }
       }
     });
 
-    
-    Object.keys(stats).forEach(cat => {
+    Object.keys(stats).forEach((cat) => {
       const data = stats[cat];
-      data.books.sort((a, b) => (parseInt(b.borrow_count) || 0) - (parseInt(a.borrow_count) || 0));
+      data.books.sort(
+        (a, b) =>
+          (parseInt(b.borrow_count) || 0) - (parseInt(a.borrow_count) || 0),
+      );
       data.books = data.books.slice(0, TOP_GENRE_LIMIT);
-      data.avgRating = data.count > 0 ? (data.totalRating / data.count).toFixed(1) : 0;
+      data.avgRating =
+        data.count > 0 ? (data.totalRating / data.count).toFixed(1) : 0;
     });
 
     return stats;
@@ -198,18 +172,38 @@ const Home = () => {
 
       switch (selectedCategory) {
         case "trending":
-          return source.sort((a, b) => (parseInt(b.borrow_count) || 0) - (parseInt(a.borrow_count) || 0)).slice(0, 20);
+          return source
+            .sort(
+              (a, b) =>
+                (parseInt(b.borrow_count) || 0) -
+                (parseInt(a.borrow_count) || 0),
+            )
+            .slice(0, 20);
 
         case "top_rated":
-          return source.sort((a, b) => (parseFloat(b.avg_rating) || 0) - (parseFloat(a.avg_rating) || 0)).slice(0, 20);
+          return source
+            .sort(
+              (a, b) =>
+                (parseFloat(b.avg_rating) || 0) -
+                (parseFloat(a.avg_rating) || 0),
+            )
+            .slice(0, 20);
 
         case "year":
           const currentYear = new Date().getFullYear();
-          return source.filter(b => parseInt(b.published_year) === currentYear).sort((a, b) => (parseFloat(b.avg_rating) || 0) - (parseFloat(a.avg_rating) || 0));
+          return source
+            .filter((b) => parseInt(b.published_year) === currentYear)
+            .sort(
+              (a, b) =>
+                (parseFloat(b.avg_rating) || 0) -
+                (parseFloat(a.avg_rating) || 0),
+            );
 
         case "genre":
           if (selectedTopGenreCategory === "All") {
-            const allTopBooks = fixedCategories.flatMap(cat => topGenreStats[cat]?.books || []);
+            const allTopBooks = fixedCategories.flatMap(
+              (cat) => topGenreStats[cat]?.books || [],
+            );
             return allTopBooks;
           } else {
             return topGenreStats[selectedTopGenreCategory]?.books || [];
@@ -217,18 +211,29 @@ const Home = () => {
 
         case "artist":
           const authorRatings = {};
-          source.forEach(b => {
+          source.forEach((b) => {
             const author = b.author || "Unknown";
-            if (!authorRatings[author]) authorRatings[author] = { total: 0, count: 0, books: [] };
+            if (!authorRatings[author])
+              authorRatings[author] = { total: 0, count: 0, books: [] };
             authorRatings[author].total += parseFloat(b.avg_rating) || 0;
             authorRatings[author].count += 1;
             authorRatings[author].books.push(b);
           });
           const topAuthor = Object.entries(authorRatings)
             .filter(([, data]) => data.count > 0)
-            .map(([author, data]) => ({ author, avgRating: data.total / data.count, books: data.books }))
+            .map(([author, data]) => ({
+              author,
+              avgRating: data.total / data.count,
+              books: data.books,
+            }))
             .sort((a, b) => b.avgRating - a.avgRating)[0];
-          return topAuthor ? topAuthor.books.sort((a, b) => (parseFloat(b.avg_rating) || 0) - (parseFloat(a.avg_rating) || 0)) : source;
+          return topAuthor
+            ? topAuthor.books.sort(
+                (a, b) =>
+                  (parseFloat(b.avg_rating) || 0) -
+                  (parseFloat(a.avg_rating) || 0),
+              )
+            : source;
 
         default:
           return source;
@@ -236,14 +241,23 @@ const Home = () => {
     }
 
     if (selectedCategory !== "All Genres") {
-      result = result.filter(b => {
+      result = result.filter((b) => {
         const cat = b.category || b.category_name || "General";
         return cat.toLowerCase().includes(selectedCategory.toLowerCase());
       });
     }
 
     return result;
-  }, [books, initialBooks, selectedCategory, selectedFilterType, searchQuery, isSearching, selectedTopGenreCategory, topGenreStats]);
+  }, [
+    books,
+    initialBooks,
+    selectedCategory,
+    selectedFilterType,
+    searchQuery,
+    isSearching,
+    selectedTopGenreCategory,
+    topGenreStats,
+  ]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -276,7 +290,7 @@ const Home = () => {
     if (selectedCategory === "genre" && selectedTopGenreCategory !== "All") {
       return `Top Genre - ${selectedTopGenreCategory}`;
     }
-    const rec = recommendations.find(r => r.id === selectedCategory);
+    const rec = recommendations.find((r) => r.id === selectedCategory);
     return rec ? rec.label : "Books";
   };
 
@@ -287,16 +301,17 @@ const Home = () => {
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
-    const mainContent = document.getElementById('main-content');
+    const mainContent = document.getElementById("main-content");
     if (mainContent) {
-      mainContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      mainContent.scrollIntoView({ behavior: "smooth", block: "start" });
     } else {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   const CategoryButton = ({ genre }) => {
-    const isActive = selectedCategory === genre && selectedFilterType === "category";
+    const isActive =
+      selectedCategory === genre && selectedFilterType === "category";
     const count = categoryCounts[genre] || 0;
 
     return (
@@ -306,16 +321,18 @@ const Home = () => {
           setSelectedFilterType("category");
           setIsSearching(false);
         }}
-        className={`flex items-center justify-between w-full gap-3 text-sm md:text-base font-medium px-4 py-2.5 rounded-xl transition-all ${isActive
-          ? "bg-[#0770ad]/10 text-[#0770ad] font-bold"
-          : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-          }`}
+        className={`flex items-center justify-between w-full gap-3 text-sm md:text-base font-medium px-4 py-2.5 rounded-xl transition-all ${
+          isActive
+            ? "bg-[#0770ad]/10 text-[#0770ad] font-bold"
+            : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+        }`}
       >
         <span className="truncate text-left">{genre}</span>
-        <span className={`text-xs px-2 py-0.5 rounded-full ${isActive
-          ? "bg-[#0770ad] text-white"
-          : "bg-gray-200 text-gray-600"
-          }`}>
+        <span
+          className={`text-xs px-2 py-0.5 rounded-full ${
+            isActive ? "bg-[#0770ad] text-white" : "bg-gray-200 text-gray-600"
+          }`}
+        >
           {count}
         </span>
       </button>
@@ -333,7 +350,9 @@ const Home = () => {
             <div className="max-w-xl text-center lg:text-left mx-auto lg:mx-0 order-2 lg:order-1 mt-6 lg:mt-0">
               <div className="flex items-center justify-center lg:justify-start gap-2 mb-4">
                 <Book className="w-6 h-6 text-[#0770ad]" />
-                <span className="font-bold text-lg tracking-widest uppercase text-[#0770ad]">SHELFSHARE</span>
+                <span className="font-bold text-lg tracking-widest uppercase text-[#0770ad]">
+                  SHELFSHARE
+                </span>
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-7xl font-black leading-tight mb-6 text-gray-900">
                 Your Personal <span className="text-[#0770ad]">Library</span>
@@ -341,7 +360,10 @@ const Home = () => {
               <p className="text-gray-500 text-base md:text-lg mb-8 font-medium">
                 Discover insights and ideas from books across every genre.
               </p>
-              <form onSubmit={handleSearch} className="relative max-w-md mx-auto lg:mx-0 shadow-xl shadow-blue-900/5 rounded-2xl bg-white border border-gray-100">
+              <form
+                onSubmit={handleSearch}
+                className="relative max-w-md mx-auto lg:mx-0 shadow-xl shadow-blue-900/5 rounded-2xl bg-white border border-gray-100"
+              >
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
@@ -375,7 +397,9 @@ const Home = () => {
 
       <div className="container mx-auto flex flex-col lg:flex-row gap-0 pt-8 relative">
         <div className="lg:hidden px-6 mb-4 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-800 truncate pr-4">{getDisplayTitle()}</h2>
+          <h2 className="text-2xl font-bold text-gray-800 truncate pr-4">
+            {getDisplayTitle()}
+          </h2>
           <button
             onClick={() => setShowMobileFilters(true)}
             className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-xl text-gray-700 font-bold shadow-sm hover:bg-gray-50 transition"
@@ -391,8 +415,13 @@ const Home = () => {
           />
         )}
 
-        <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:w-1/4 lg:bg-transparent lg:shadow-none lg:z-0 ${showMobileFilters ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-          }`}>
+        <aside
+          className={`fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:w-1/4 lg:bg-transparent lg:shadow-none lg:z-0 ${
+            showMobileFilters
+              ? "translate-x-0"
+              : "-translate-x-full lg:translate-x-0"
+          }`}
+        >
           <div className="h-full overflow-y-auto p-6 lg:p-8 space-y-8 scrollbar-hide">
             <div className="flex justify-between items-center lg:hidden mb-4">
               <h3 className="font-bold text-lg">Filters</h3>
@@ -422,7 +451,9 @@ const Home = () => {
               </h3>
               <ul className="space-y-2">
                 {recommendations.map(({ id, label, icon: Icon }) => {
-                  const isActive = selectedFilterType === "recommendation" && selectedCategory === id;
+                  const isActive =
+                    selectedFilterType === "recommendation" &&
+                    selectedCategory === id;
                   return (
                     <li key={id}>
                       <button
@@ -431,17 +462,22 @@ const Home = () => {
                           setSelectedFilterType("recommendation");
                           setIsSearching(false);
                           setShowMobileFilters(false);
-                          if (id === "genre") setSelectedTopGenreCategory("All");
+                          if (id === "genre")
+                            setSelectedTopGenreCategory("All");
                         }}
-                        className={`flex items-center gap-3 w-full p-3 rounded-xl transition-all group ${isActive
-                          ? "bg-[#0770ad] text-white shadow-md"
-                          : "text-gray-600 hover:bg-gray-50"
-                          }`}
+                        className={`flex items-center gap-3 w-full p-3 rounded-xl transition-all group ${
+                          isActive
+                            ? "bg-[#0770ad] text-white shadow-md"
+                            : "text-gray-600 hover:bg-gray-50"
+                        }`}
                       >
-                        <Icon className={`w-5 h-5 ${isActive
-                          ? "text-white"
-                          : "text-gray-400 group-hover:text-[#0770ad]"
-                          }`} />
+                        <Icon
+                          className={`w-5 h-5 ${
+                            isActive
+                              ? "text-white"
+                              : "text-gray-400 group-hover:text-[#0770ad]"
+                          }`}
+                        />
                         <span className="font-medium text-sm">{label}</span>
                       </button>
                     </li>
@@ -452,7 +488,10 @@ const Home = () => {
           </div>
         </aside>
 
-        <main id="main-content" className="flex-1 py-4 lg:py-8 px-6 lg:px-8 min-h-[500px]">
+        <main
+          id="main-content"
+          className="flex-1 py-4 lg:py-8 px-6 lg:px-8 min-h-[500px]"
+        >
           <div className="hidden lg:flex mb-8 flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-3xl font-black text-gray-900 flex items-center gap-3">
@@ -483,50 +522,64 @@ const Home = () => {
             )}
           </div>
 
-          {selectedFilterType === "recommendation" && selectedCategory === "genre" && (
-            <div className="mb-6 bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-              <div className="flex items-center gap-2 mb-3">
-                <Zap className="w-5 h-5 text-yellow-500" />
-                <h3 className="font-bold text-lg text-gray-800">Select Genre (Top 5 per category)</h3>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-                <button
-                  onClick={() => setSelectedTopGenreCategory("All")}
-                  className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${selectedTopGenreCategory === "All"
-                    ? "bg-[#0770ad] text-white shadow-md"
-                    : "bg-gray-50 text-gray-700 hover:bg-gray-100"
-                    }`}
-                >
-                  All Genres
-                </button>
-                {fixedCategories.map((cat) => {
-                  const stats = topGenreStats[cat];
-                  return (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedTopGenreCategory(cat)}
-                      className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col items-start ${selectedTopGenreCategory === cat
+          {selectedFilterType === "recommendation" &&
+            selectedCategory === "genre" && (
+              <div className="mb-6 bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <Zap className="w-5 h-5 text-yellow-500" />
+                  <h3 className="font-bold text-lg text-gray-800">
+                    Select Genre (Top 5 per category)
+                  </h3>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+                  <button
+                    onClick={() => setSelectedTopGenreCategory("All")}
+                    className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                      selectedTopGenreCategory === "All"
                         ? "bg-[#0770ad] text-white shadow-md"
                         : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    All Genres
+                  </button>
+                  {fixedCategories.map((cat) => {
+                    const stats = topGenreStats[cat];
+                    return (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedTopGenreCategory(cat)}
+                        className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col items-start ${
+                          selectedTopGenreCategory === cat
+                            ? "bg-[#0770ad] text-white shadow-md"
+                            : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                         }`}
-                    >
-                      <span className="truncate w-full text-left">{cat}</span>
-                      <span className={`text-[10px] mt-1 ${selectedTopGenreCategory === cat ? "text-blue-100" : "text-gray-500"
-                        }`}>
-                        {stats.totalBorrows} borrows • ⭐{stats.avgRating}
-                      </span>
-                    </button>
-                  );
-                })}
+                      >
+                        <span className="truncate w-full text-left">{cat}</span>
+                        <span
+                          className={`text-[10px] mt-1 ${
+                            selectedTopGenreCategory === cat
+                              ? "text-blue-100"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {stats.totalBorrows} borrows • ⭐{stats.avgRating}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {loading ? (
             <div className="text-center py-20">
               <Loader2 className="w-12 h-12 text-[#0770ad] animate-spin mx-auto mb-4" />
               <p className="text-gray-400">Loading library...</p>
-              <p className="text-gray-400 text-sm mt-2">Preparing books for each category...</p>
+              {isFilling && (
+                <p className="text-gray-400 text-sm mt-2">
+                  Discovering more books for you...
+                </p>
+              )}
             </div>
           ) : currentBooks.length > 0 ? (
             <>
@@ -535,7 +588,11 @@ const Home = () => {
                   <BookCard
                     key={`${book.book_id || book.id || book.google_id}-${index}`}
                     book={book}
-                    rank={selectedFilterType === "recommendation" ? indexOfFirstBook + index + 1 : null}
+                    rank={
+                      selectedFilterType === "recommendation"
+                        ? indexOfFirstBook + index + 1
+                        : null
+                    }
                     showStats={true}
                   />
                 ))}

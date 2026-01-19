@@ -1,1 +1,16 @@
 .DS_Store
+node_modules/
+dist/
+.env
+.env.local
+
+# Agent Skills & Configuration
+.agent/
+.codex/
+.cursor/
+.gemini/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
