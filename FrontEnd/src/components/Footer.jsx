@@ -148,10 +148,13 @@ const Footer = () => {
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-200 group-focus-within:text-white transition-colors" />
                 <input
+                  id="newsletter-email"
+                  name="newsletterEmail"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email address"
+                  autoComplete="email"
                   className="w-full bg-white/10 border border-white/30 rounded-xl py-3 pl-12 pr-4 text-white text-sm placeholder:text-blue-100/70 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all backdrop-blur-sm"
                   required
                   disabled={isSubmitting}

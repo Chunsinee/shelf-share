@@ -352,10 +352,13 @@ const Favbooks = () => {
               <div className="flex-1 relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
+                  id="favorite-books-search"
+                  name="favoriteBooksSearch"
                   type="text"
                   placeholder="Search favorites..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  autoComplete="off"
                   className="w-full pl-12 pr-4 py-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-[#0770ad] transition"
                 />
               </div>
@@ -379,6 +382,8 @@ const Favbooks = () => {
               <div className="relative flex-1">
                 <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0770ad] w-5 h-5" />
                 <select
+                  id="favorite-books-category"
+                  name="favoriteBooksCategory"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="w-full sm:w-auto pl-12 pr-8 py-2.5 bg-blue-50 text-[#0770ad] font-bold rounded-xl outline-none cursor-pointer appearance-none"
@@ -399,6 +404,8 @@ const Favbooks = () => {
               <div className="relative flex-1">
                 <SortAsc className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
                 <select
+                  id="favorite-books-sort"
+                  name="favoriteBooksSort"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                   className="w-full sm:w-auto pl-12 pr-8 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl outline-none cursor-pointer appearance-none"
@@ -458,6 +465,8 @@ const Favbooks = () => {
                 <div key={bookId} className="relative group">
                   <div className="absolute top-4 left-4 z-10">
                     <input
+                      id={`favorite-book-select-${bookId}`}
+                      name="selectedFavoriteBooks"
                       type="checkbox"
                       checked={selectedBooks.has(bookId)}
                       onChange={() => handleSelectBook(bookId)}

@@ -272,6 +272,8 @@ const AllBooks = () => {
                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
 
                 <input
+                  id="all-books-search"
+                  name="allBooksSearch"
                   type="text"
                   placeholder="Search by title or author... (e.g. Harry, Steve)"
                   value={query}
@@ -280,6 +282,7 @@ const AllBooks = () => {
                   onFocus={() => {
                     if (suggestions.length > 0) setShowSuggestions(true);
                   }}
+                  autoComplete="off"
                   className="w-full pl-14 pr-28 py-4 bg-gray-50 border-2 border-transparent focus:border-[#0770ad]/30 focus:bg-white rounded-xl transition-all outline-none"
                 />
 
@@ -372,6 +375,8 @@ const AllBooks = () => {
             <div className="relative w-full md:w-64">
               <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0770ad] w-5 h-5 pointer-events-none" />
               <select
+                id="all-books-category"
+                name="allBooksCategory"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full pl-12 pr-8 py-4 bg-blue-50 text-[#0770ad] font-bold rounded-xl cursor-pointer appearance-none focus:outline-none focus:ring-2 focus:ring-[#0770ad]"

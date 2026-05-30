@@ -366,10 +366,13 @@ const Home = () => {
               >
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
+                  id="home-book-search"
+                  name="homeBookSearch"
                   type="text"
                   placeholder="Search books, authors..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  autoComplete="off"
                   className="w-full bg-transparent py-4 pl-12 pr-12 rounded-2xl outline-none focus:ring-2 focus:ring-[#0770ad] transition"
                 />
                 {searchQuery && (

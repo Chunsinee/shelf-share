@@ -95,11 +95,14 @@ export default function ForgetPassword() {
           <div className="relative group">
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
+              id="forgot-password-email"
+              name="forgotPasswordEmail"
               type="email"
               placeholder="your.email@example.com"
               value={email}
               onChange={(e) => { setEmail(e.target.value); setError(""); }}
               disabled={loading}
+              autoComplete="email"
               className="w-full bg-gray-50 border border-gray-200 rounded-xl px-12 py-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0770ad]/50 transition-all"
             />
           </div>

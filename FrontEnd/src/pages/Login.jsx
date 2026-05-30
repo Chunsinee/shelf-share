@@ -274,6 +274,8 @@ const Login = () => {
             <div className="flex justify-between text-sm items-center">
               <label className="flex items-center gap-2 text-gray-500 cursor-pointer hover:text-gray-700">
                 <input
+                  id="remember-me"
+                  name="rememberMe"
                   type="checkbox"
                   className="h-4 w-4 accent-[#0770ad] rounded border-gray-300"
                 />

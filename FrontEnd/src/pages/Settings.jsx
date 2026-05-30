@@ -31,6 +31,8 @@ const TabButton = ({ value, icon: Icon, label, isActive, onClick }) => (
 );
 
 const Input = ({
+  id,
+  name,
   label,
   type = "text",
   value,
@@ -42,7 +44,10 @@ const Input = ({
   icon: Icon,
 }) => (
   <div>
-    <label className="block font-semibold mb-2 text-gray-700 flex items-center gap-2">
+    <label
+      htmlFor={id}
+      className="block font-semibold mb-2 text-gray-700 flex items-center gap-2"
+    >
       {Icon && <Icon className="w-4 h-4 text-gray-400" />}
       {label}
       {required && <span className="text-red-500">*</span>}
@@ -53,6 +58,8 @@ const Input = ({
       )}
     </label>
     <input
+      id={id}
+      name={name}
       type={type}
       value={value}
       onChange={onChange}
@@ -71,6 +78,8 @@ const Input = ({
 );
 
 const PasswordInput = ({
+  id,
+  name,
   label,
   value,
   onChange,
@@ -79,12 +88,17 @@ const PasswordInput = ({
   disabled,
 }) => (
   <div>
-    <label className="block font-semibold mb-2 text-gray-700 flex items-center gap-2">
+    <label
+      htmlFor={id}
+      className="block font-semibold mb-2 text-gray-700 flex items-center gap-2"
+    >
       <Lock className="w-4 h-4 text-gray-400" />
       {label}
     </label>
     <div className="relative">
       <input
+        id={id}
+        name={name}
         type={show ? "text" : "password"}
         value={value}
         onChange={onChange}
@@ -309,6 +323,8 @@ const Settings = () => {
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Input
+                    id="settings-first-name"
+                    name="firstName"
                     label="First Name"
                     value={profileForm.firstName}
                     onChange={(e) =>
@@ -321,6 +337,8 @@ const Settings = () => {
                     readOnly={!isEditing}
                   />
                   <Input
+                    id="settings-last-name"
+                    name="lastName"
                     label="Last Name"
                     value={profileForm.lastName}
                     onChange={(e) =>
@@ -336,6 +354,8 @@ const Settings = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Input
+                    id="settings-email"
+                    name="email"
                     label="Email"
                     icon={Mail}
                     type="email"
@@ -344,6 +364,8 @@ const Settings = () => {
                     disabled={true}
                   />
                   <Input
+                    id="settings-mobile"
+                    name="mobile"
                     label="Mobile Number"
                     value={profileForm.mobile}
                     onChange={(e) =>
@@ -401,6 +423,8 @@ const Settings = () => {
                     Address
                   </label>
                   <textarea
+                    id="settings-address"
+                    name="address"
                     value={profileForm.address}
                     onChange={(e) =>
                       setProfileForm({
@@ -469,6 +493,8 @@ const Settings = () => {
                 Change Password
               </h2>
               <PasswordInput
+                id="settings-current-password"
+                name="currentPassword"
                 label="Current Password"
                 value={passwordForm.current}
                 onChange={(e) =>
@@ -484,6 +510,8 @@ const Settings = () => {
                 disabled={loading}
               />
               <PasswordInput
+                id="settings-new-password"
+                name="newPassword"
                 label="New Password"
                 value={passwordForm.newPass}
                 onChange={(e) =>
@@ -499,6 +527,8 @@ const Settings = () => {
                 disabled={loading}
               />
               <PasswordInput
+                id="settings-confirm-password"
+                name="confirmPassword"
                 label="Confirm New Password"
                 value={passwordForm.confirm}
                 onChange={(e) =>

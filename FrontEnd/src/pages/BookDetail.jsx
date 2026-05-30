@@ -535,6 +535,8 @@ const BookDetail = () => {
                   Comment
                 </label>
                 <textarea
+                  id="review-comment"
+                  name="reviewComment"
                   value={newReview.comment}
                   onChange={(e) =>
                     setNewReview({ ...newReview, comment: e.target.value })
