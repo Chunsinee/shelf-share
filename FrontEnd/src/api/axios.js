@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+const isDevelopment = import.meta.env.DEV;
+
 const instance = axios.create({
   baseURL: `${import.meta.env.VITE_API_BASE_URL}/api`,
   headers: {
@@ -13,7 +15,9 @@ instance.interceptors.request.use(
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
-    console.log("🔑 Request:", config.method.toUpperCase(), config.url);
+    if (isDevelopment) {
+      console.log("🔑 Request:", config.method.toUpperCase(), config.url);
+    }
     return config;
   },
   (error) => {
@@ -23,11 +27,15 @@ instance.interceptors.request.use(
 
 instance.interceptors.response.use(
   (response) => {
-    console.log("✅ Response:", response.config.url, response.status);
+    if (isDevelopment) {
+      console.log("✅ Response:", response.config.url, response.status);
+    }
     return response;
   },
   (error) => {
-    console.error("❌ Error:", error.response?.status, error.response?.data);
+    if (isDevelopment) {
+      console.error("❌ Error:", error.response?.status, error.response?.data);
+    }
 
     if ((error.response?.status === 401 || error.response?.status === 403) && !error.config.url.includes('/login')) {
       

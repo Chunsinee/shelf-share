@@ -1,6 +1,6 @@
 
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Heart } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
@@ -8,6 +8,10 @@ import api from '../services/api';
 const FavBtn = ({ book, className = '', size = 'default' }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const targetId = useMemo(
+    () => String(book.book_id || book.id || book.google_id),
+    [book.book_id, book.google_id, book.id],
+  );
 
 
   const sizes = {
@@ -22,32 +26,33 @@ const FavBtn = ({ book, className = '', size = 'default' }) => {
     large: 'w-7 h-7'
   };
 
-
-  useEffect(() => {
-    checkFavoriteStatus();
-  }, [book.id, isFavorite]);
-
-  const checkFavoriteStatus = async () => {
+  const checkFavoriteStatus = useCallback(async () => {
     try {
 
       const myFavs = await api.getMyFavorites();
       const exists = myFavs.some(fav =>
-        String(fav.book_id) === String(book.book_id || book.id) ||
-        String(fav.google_id) === String(book.google_id || book.id)
+        String(fav.book_id) === targetId ||
+        String(fav.google_id) === targetId
       );
       setIsFavorite(exists);
     } catch (err) {
-      console.error('Error checking favorite status:', err);
+      if (import.meta.env.DEV) {
+        console.error('Error checking favorite status:', err);
+      }
     }
-  };
+  }, [targetId]);
+
+  useEffect(() => {
+    // Sync this button's initial state with the user's saved favorites.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    checkFavoriteStatus();
+  }, [checkFavoriteStatus]);
 
   const handleToggleFavorite = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
     if (isAnimating) return;
-
-    const targetId = book.book_id || book.id || book.google_id;
 
     try {
       if (isFavorite) {
@@ -70,7 +75,9 @@ const FavBtn = ({ book, className = '', size = 'default' }) => {
       window.dispatchEvent(new Event('favoritesUpdated'));
 
     } catch (err) {
-      console.error('Error toggling favorite:', err);
+      if (import.meta.env.DEV) {
+        console.error('Error toggling favorite:', err);
+      }
       toast.error('Failed to update favorites. Please try again.');
     }
   };

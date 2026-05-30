@@ -14,7 +14,7 @@ import {
   ChevronRight,
   Filter,
 } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import BookCard from "../components/BookCard";
 import api from "../services/api";
 import Navbar from "../components/Navbar";
@@ -42,7 +42,6 @@ const recommendations = [
 ];
 
 const Home = () => {
-  const navigate = useNavigate();
   const location = useLocation();
 
   // Use custom hook for initial data fetching
@@ -90,7 +89,9 @@ const Home = () => {
       }
       setIsSearching(false);
       setSearchQuery("");
-      setBooks(initialBooks.length > 0 ? initialBooks : books);
+      setBooks((currentBooks) =>
+        initialBooks.length > 0 ? initialBooks : currentBooks,
+      );
 
       setTimeout(() => {
         const mainContent = document.getElementById("main-content");
@@ -189,7 +190,7 @@ const Home = () => {
             )
             .slice(0, 20);
 
-        case "year":
+        case "year": {
           const currentYear = new Date().getFullYear();
           return source
             .filter((b) => parseInt(b.published_year) === currentYear)
@@ -198,8 +199,9 @@ const Home = () => {
                 (parseFloat(b.avg_rating) || 0) -
                 (parseFloat(a.avg_rating) || 0),
             );
+        }
 
-        case "genre":
+        case "genre": {
           if (selectedTopGenreCategory === "All") {
             const allTopBooks = fixedCategories.flatMap(
               (cat) => topGenreStats[cat]?.books || [],
@@ -208,8 +210,9 @@ const Home = () => {
           } else {
             return topGenreStats[selectedTopGenreCategory]?.books || [];
           }
+        }
 
-        case "artist":
+        case "artist": {
           const authorRatings = {};
           source.forEach((b) => {
             const author = b.author || "Unknown";
@@ -234,6 +237,7 @@ const Home = () => {
                   (parseFloat(a.avg_rating) || 0),
               )
             : source;
+        }
 
         default:
           return source;
@@ -272,7 +276,9 @@ const Home = () => {
       const results = await api.getBooks(searchQuery);
       setBooks(results);
     } catch (err) {
-      console.error("Search failed:", err);
+      if (import.meta.env.DEV) {
+        console.error("Search failed:", err);
+      }
     } finally {
       setLoading(false);
     }

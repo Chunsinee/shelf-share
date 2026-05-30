@@ -1,5 +1,11 @@
 import axios from "../api/axios";
 
+const logApiError = (message, error) => {
+  if (import.meta.env.DEV) {
+    console.error(message, error);
+  }
+};
+
 const api = {
 
   login: async (email, password) => {
@@ -27,7 +33,7 @@ const api = {
       const res = await axios.get("/categories");
       return res.data;
     } catch (e) {
-      console.error("❌ getCategories error:", e);
+      logApiError("❌ getCategories error:", e);
       return [];
     }
   },
@@ -53,7 +59,7 @@ const api = {
         review_count: parseInt(book.review_count || 0),
       }));
     } catch (e) {
-      console.error("❌ getBooks error:", e);
+      logApiError("❌ getBooks error:", e);
       return [];
     }
   },
@@ -75,7 +81,7 @@ const api = {
       const res = await axios.get("/loans/my-loans");
       return res.data;
     } catch (e) {
-      console.error("❌ getBorrowedBooks error:", e);
+      logApiError("❌ getBorrowedBooks error:", e);
       return [];
     }
   },
@@ -103,7 +109,7 @@ const api = {
       const res = await axios.get("/reservations/my-reservations");
       return res.data;
     } catch (e) {
-      console.error("❌ getMyReservations error:", e);
+      logApiError("❌ getMyReservations error:", e);
       return [];
     }
   },
@@ -119,7 +125,7 @@ const api = {
       const res = await axios.get(`/reviews/${id}`);
       return res.data;
     } catch (e) {
-      console.error("❌ getBookReviews error:", e);
+      logApiError("❌ getBookReviews error:", e);
       return [];
     }
   },
@@ -135,7 +141,7 @@ const api = {
       const res = await axios.get(`/books/suggest?query=${encodeURIComponent(query.trim())}`);
       return res.data;
     } catch (e) {
-      console.error("❌ getSuggestions error:", e);
+      logApiError("❌ getSuggestions error:", e);
       return [];
     }
   },
@@ -162,7 +168,7 @@ const api = {
       const res = await axios.get("/favorites");
       return res.data;
     } catch (e) {
-      console.error("❌ getMyFavorites error:", e);
+      logApiError("❌ getMyFavorites error:", e);
       return [];
     }
   }

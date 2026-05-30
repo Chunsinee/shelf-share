@@ -185,7 +185,9 @@ const Settings = () => {
       setOriginalData(profileForm);
       setIsEditing(false);
     } catch (err) {
-      console.error(err);
+      if (import.meta.env.DEV) {
+        console.error(err);
+      }
       toast.error(err.response?.data || "Failed to update profile");
     } finally {
       setLoading(false);

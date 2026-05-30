@@ -12,6 +12,8 @@ import {
 import { useAuth } from "../hooks/useAuth";
 import toast from "react-hot-toast";
 
+const isDevelopment = import.meta.env.DEV;
+
 const Input = ({
   icon: Icon,
   type = "text",
@@ -117,11 +119,8 @@ const Login = () => {
     setLoading(true);
     setErrors({});
 
-    console.log("Attempting login...");
-
     try {
       const result = await login(loginForm.email, loginForm.password);
-      console.log("Login result:", result);
 
       if (!result) {
         throw new Error("No response from login service");
@@ -134,18 +133,18 @@ const Login = () => {
             : result.message?.message ||
               "Login failed. Please check your credentials.";
 
-        console.log("Login error:", errorMsg);
         toast.error(errorMsg);
         setLoginForm((prev) => ({ ...prev, password: "" }));
       } else {
-        console.log("Login success, navigating...");
         navigate("/");
         setTimeout(() => {
           toast.success(`Welcome back, ${result.user.username}!`);
         }, 100);
       }
     } catch (err) {
-      console.error("Login exception:", err);
+      if (isDevelopment) {
+        console.error("Login exception:", err);
+      }
       toast.error("Unable to connect to server");
     } finally {
       setLoading(false);
@@ -187,7 +186,9 @@ const Login = () => {
         }, 100);
       }
     } catch (err) {
-      console.error(err);
+      if (isDevelopment) {
+        console.error(err);
+      }
       toast.error("Unable to connect to server");
     } finally {
       setLoading(false);

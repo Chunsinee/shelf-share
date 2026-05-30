@@ -91,7 +91,9 @@ const BorrowBtn = ({ book, hours = 168, className = "", label = "Borrow Now", on
       const bookId = String(book.book_id || book.id || book.google_id);
       const totalHours = parseFloat(hours) || 168; 
 
-      console.log("🚀 Borrowing book:", { bookId, hours: totalHours });
+      if (import.meta.env.DEV) {
+        console.log("🚀 Borrowing book:", { bookId, hours: totalHours });
+      }
 
       await api.borrowBook(bookId, totalHours);
 
@@ -104,7 +106,9 @@ const BorrowBtn = ({ book, hours = 168, className = "", label = "Borrow Now", on
       toast.success("Borrowed Successfully! Added to your shelf."); 
       navigate("/borrow");
     } catch (error) {
-      console.error("Borrow error:", error);
+      if (import.meta.env.DEV) {
+        console.error("Borrow error:", error);
+      }
       const errorMsg = error.response?.data || error.message || "Failed to borrow book";
       toast.error(errorMsg); 
     } finally {
@@ -162,7 +166,9 @@ const BorrowBtn = ({ book, hours = 168, className = "", label = "Borrow Now", on
       const hoursValue = parseFloat(duration);
       const response = await api.createReservation(bookId, hoursValue);
 
-      console.log("✅ Reservation response:", response);
+      if (import.meta.env.DEV) {
+        console.log("✅ Reservation response:", response);
+      }
 
       setIsReserved(true);
       const queuePos = response.queue_position || 1;
@@ -170,17 +176,12 @@ const BorrowBtn = ({ book, hours = 168, className = "", label = "Borrow Now", on
 
       if (onUpdate) await onUpdate();
 
-      const getDurationText = (h) => {
-        if (h < 1) return `${Math.round(h * 60)} minutes`;
-        if (h < 24) return `${h} hour${h > 1 ? 's' : ''}`;
-        if (h < 168) return `${h / 24} day${h / 24 > 1 ? 's' : ''}`;
-        return `${h / 168} week${h / 168 > 1 ? 's' : ''}`;
-      };
-
       toast.success(`Reserved Successfully! You are #${queuePos} in queue.`); 
       navigate("/borrow");
     } catch (err) {
-      console.error("Reserve error:", err);
+      if (import.meta.env.DEV) {
+        console.error("Reserve error:", err);
+      }
       const errorMsg = err.response?.data || err.message || "Failed to reserve book";
       toast.error(errorMsg); 
     } finally {

@@ -6,6 +6,13 @@ const { Resend } = require('resend');
 const crypto = require('crypto');
 require('dotenv').config();
 
+const isProduction = process.env.NODE_ENV === 'production';
+const debugLog = (...args) => {
+  if (!isProduction) {
+    console.log(...args);
+  }
+};
+
 const generateToken = (user) => {
   return jwt.sign(
     {
@@ -25,7 +32,7 @@ const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
 // Verify Resend API key on startup
 if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 'your-resend-api-key-here') {
-  console.log('✅ Resend email service initialized');
+  debugLog('✅ Resend email service initialized');
 } else {
   console.warn('⚠️  RESEND_API_KEY not configured - email features will not work');
 }
@@ -56,7 +63,7 @@ exports.register = async (req, res) => {
     const token = generateToken(newUser.rows[0]);
     const { password: _, ...userData } = newUser.rows[0];
 
-    console.log(`👤 New User Registered: ${username} (${email})`);
+    debugLog(`👤 New User Registered: ${username} (${email})`);
 
     res.json({ token, user: userData });
   } catch (err) {
@@ -84,14 +91,14 @@ exports.login = async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password);
 
     if (!validPassword) {
-      console.log(`❌ Failed Login Attempt: ${email}`);
+      debugLog(`❌ Failed Login Attempt: ${email}`);
       return res.status(401).json({ message: "Invalid password" });
     }
 
     const token = generateToken(user);
     const { password: _, ...userData } = user;
 
-    console.log(`✅ User Logged In: ${user.username} (${user.email})`);
+    debugLog(`✅ User Logged In: ${user.username} (${user.email})`);
 
     res.json({ token, user: userData });
   } catch (err) {
@@ -215,12 +222,12 @@ exports.forgotPassword = async (req, res) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    console.log(`📧 Password reset requested for: ${email}`);
+    debugLog(`📧 Password reset requested for: ${email}`);
 
     const user = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
 
     if (user.rows.length === 0) {
-      console.log(`⚠️  Email not found in database: ${email}`);
+      debugLog(`⚠️  Email not found in database: ${email}`);
       return res.json({ message: "If the email exists, a reset link has been sent" });
     }
 
@@ -233,13 +240,12 @@ exports.forgotPassword = async (req, res) => {
       [resetTokenHash, resetTokenExpire, user.rows[0].user_id]
     );
 
-    console.log(`🔑 Reset token generated for user: ${user.rows[0].username}`);
+    debugLog(`🔑 Reset token generated for user: ${user.rows[0].username}`);
 
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    console.log(`📬 Sending reset email to: ${email}`);
-    console.log(`📬 From: onboarding@resend.dev`);
-    console.log(`📬 Reset URL: ${resetUrl}`);
+    debugLog(`📬 Sending reset email to: ${email}`);
+    debugLog(`📬 From: onboarding@resend.dev`);
 
     try {
       const result = await resend.emails.send({
@@ -258,11 +264,11 @@ exports.forgotPassword = async (req, res) => {
         `
       });
 
-      console.log(`✅ Resend API Response:`, result);
-      console.log(`✅ Password reset email sent successfully to: ${email}`);
+      debugLog(`✅ Resend API Response:`, result);
+      debugLog(`✅ Password reset email sent successfully to: ${email}`);
     } catch (emailError) {
-      console.error(`❌ Resend API Error:`, emailError);
-      console.error(`❌ Error details:`, {
+      console.error(`❌ Resend API Error:`, emailError.message);
+      debugLog(`❌ Error details:`, {
         message: emailError.message,
         name: emailError.name,
         statusCode: emailError.statusCode
@@ -273,8 +279,8 @@ exports.forgotPassword = async (req, res) => {
     res.json({ message: "If the email exists, a reset link has been sent" });
 
   } catch (err) {
-    console.error('❌ Forgot password error:', err);
-    console.error('Error details:', {
+    console.error('❌ Forgot password error:', err.message);
+    debugLog('Error details:', {
       message: err.message,
       name: err.name
     });

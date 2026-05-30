@@ -1,5 +1,4 @@
 import React, {
-  createContext,
   useState,
   useEffect,
   useMemo,
@@ -8,8 +7,7 @@ import React, {
 import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import api from "../services/api";
-
-export const AuthContext = createContext();
+import { AuthContext } from "./auth-context";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -18,15 +16,15 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   // Fetch user profile if token exists
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     try {
       const res = await axios.get("/users/profile");
       setUser(res.data);
-    } catch (err) {
+    } catch {
       localStorage.removeItem("token");
       setUser(null);
     }
-  };
+  }, []);
 
   // 1. Initial Check
   useEffect(() => {
@@ -39,7 +37,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     };
     initAuth();
-  }, []);
+  }, [fetchUserProfile]);
 
   const login = useCallback(async (email, password) => {
     try {

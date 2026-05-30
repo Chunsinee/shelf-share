@@ -210,6 +210,9 @@ const BorrowReturn = () => {
         toast.success("Reservation cancelled successfully");
         fetchData();
       } catch (err) {
+        if (import.meta.env.DEV) {
+          console.error("Failed to cancel reservation:", err);
+        }
         toast.error("Failed to cancel reservation");
       }
     }

@@ -167,7 +167,7 @@ const BookDetail = () => {
         try {
           const reviewsData = await api.getBookReviews(id);
           setReviews(Array.isArray(reviewsData) ? reviewsData : []);
-        } catch (e) {
+        } catch {
           setReviews([]);
         }
 
@@ -194,7 +194,9 @@ const BookDetail = () => {
               });
               setSimilarBooks(similar.slice(0, 4));
             }
-          } catch (e) { }
+          } catch {
+            setSimilarBooks([]);
+          }
         }
       } catch (err) {
         if (isMounted) setError(err.response?.data || "Failed to load book");
@@ -226,14 +228,6 @@ const BookDetail = () => {
     } finally {
       setSubmittingReview(false);
     }
-  };
-
-  // Handle book borrowing
-  const handleBorrow = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied to clipboard!");
-    } catch (err) { }
   };
 
   if (loading)
